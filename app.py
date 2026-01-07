@@ -5,7 +5,7 @@ import numpy as np
 # 1. Page Config
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
-# 2. THE ULTIMATE CSS ENGINE (LOCKED & CLEANED)
+# 2. THE ULTIMATE CSS ENGINE (LOCKED)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -18,10 +18,8 @@ st.markdown("""
     .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; }
     .stButton > button:hover { border-color: #00F0FF !important; color: #00F0FF !important; }
     .section-label { color: #00F0FF; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
-    .metric-container { text-align: center; padding: 10px; }
+    .metric-value { font-size: 24px; font-weight: 600; margin-top: -10px; }
     .how-to { color: #484F58; font-size: 12px; margin-top: -10px; margin-bottom: 15px; font-style: italic; }
-    /* Target the small help icon color to match your green/cyan theme */
-    .stTooltipIcon { color: #00F0FF !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -90,7 +88,6 @@ target_id = st.session_state.selected_id
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
 st.markdown(f'<p class="section-label" style="margin-top: 30px;">2. Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
-st.markdown('<p class="how-to">Test "What-If" scenarios to lower this customer\'s specific risk score.</p>', unsafe_allow_html=True)
 
 c1, c2 = st.columns(2)
 with c1:
@@ -119,35 +116,38 @@ sim_discount = st.session_state.active_discount
 sim_risk = max(5, risk - (sim_discount * 0.6))
 savings = ((risk/100) * clv) - ((sim_risk/100) * ((monthly * (1 - sim_discount/100)) * 24))
 
-# CLEAN METRICS WITH THE HOVER ICONS IN THE LABELS
+# METRICS WITH CLEAN HOVER ICONS (Using st.caption)
 m_col1, m_col2 = st.columns(2)
 with m_col1:
-    st.text_input("Simulated Risk", value=f"{sim_risk:.1f}%", disabled=True, help="The new churn probability based on selected simulations.")
+    st.caption("Simulated Risk", help="The new churn probability based on selected simulations.")
+    st.markdown(f'<p class="metric-value" style="color: #00F0FF;">{sim_risk:.1f}%</p>', unsafe_allow_html=True)
 with m_col2:
-    st.text_input("Revenue Safeguarded", value=f"+${savings:,.2f}", disabled=True, help="Estimated dollar amount protected by reducing risk.")
+    st.caption("Revenue Safeguarded", help="Estimated dollar amount protected by reducing risk.")
+    st.markdown(f'<p class="metric-value" style="color: #00FFAB;">+${savings:,.2f}</p>', unsafe_allow_html=True)
 
 # 9. XAI & BUSINESS IMPACT
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
-st.markdown('<p class="how-to">Visualizes the top factors driving this customer\'s risk score.</p>', unsafe_allow_html=True)
 
 xai_c1, xai_c2 = st.columns(2)
 with xai_c1:
-    st.info(f"{cfg['label']} Impact: {'🔴 High' if contract == 'Standard' else '🟢 Low'}", icon="⚖️")
-    # This empty selection box is just to host the clean help icon you wanted
-    st.write("", help="Shows how much the contract type pushes risk up/down.")
+    st.caption(f"⚖️ {cfg['label']} Impact", help="Shows how much the contract type pushes risk up/down.")
+    st.markdown(f"<p style='margin-top:-10px;'>{'🔴 High' if contract == 'Standard' else '🟢 Low'}</p>", unsafe_allow_html=True)
 with xai_c2:
-    st.info(f"Support Impact: {'🔴 High' if not has_support else '🟢 Low'}", icon="🛠️")
-    st.write("", help="Correlation between support and churn intent.")
+    st.caption("🛠️ Support Impact", help="Correlation between support and churn intent.")
+    st.markdown(f"<p style='margin-top:-10px;'>{'🔴 High' if not has_support else '🟢 Low'}</p>", unsafe_allow_html=True)
 
 st.markdown("---")
 st.markdown('<p class="section-label">4. Macro Business Impact Projection</p>', unsafe_allow_html=True)
 
 bi1, bi2, bi3 = st.columns(3)
 with bi1: 
-    st.text_input("Annual Savings", value=f"+${cfg['leakage'] * 0.22:,.0f}", disabled=True, help="Total revenue recovery based on 22% model efficiency.")
+    st.caption("Annual Savings", help="Total revenue recovery based on 22% model efficiency.")
+    st.markdown(f'<p class="metric-value" style="color: #00FFAB;">+${cfg["leakage"] * 0.22:,.0f}</p>', unsafe_allow_html=True)
 with bi2: 
-    st.text_input("Efficiency", value="91%", disabled=True, help="Accuracy of AI in identifying genuine churn threats.")
+    st.caption("Efficiency", help="Accuracy of AI in identifying genuine churn threats.")
+    st.markdown('<p class="metric-value" style="color: #00F0FF;">91%</p>', unsafe_allow_html=True)
 with bi3: 
-    st.text_input("Confidence", value="94.2%", disabled=True, help="Statistical confidence interval for predictions.")
+    st.caption("Confidence", help="Statistical confidence interval for predictions.")
+    st.markdown('<p class="metric-value">94.2%</p>', unsafe_allow_html=True)
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani | Predictive Analytics & XAI Deployment</p>", unsafe_allow_html=True)
