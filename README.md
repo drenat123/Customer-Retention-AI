@@ -7,7 +7,6 @@ An end-to-end Machine Learning pipeline designed to solve customer attrition usi
 
 ## 🚀 Live Demo
 [👉 View the Live Dashboard](https://customer-retention-ai-cqjuv5mztzg7q6yng2fjhf.streamlit.app/))
-
 ## 🎯 Business Problem
 Acquiring new customers costs 5x more than retaining existing ones. This project provides a proactive solution by:
 - **Predicting Churn** with 98.5% precision.
