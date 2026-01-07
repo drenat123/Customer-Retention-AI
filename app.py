@@ -5,7 +5,7 @@ import numpy as np
 # 1. PAGE CONFIG
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
-# 2. THE RIGID CSS ENGINE (FORCING COLORS & SIZE)
+# 2. THE ULTIMATE CSS ENGINE (FORCED COLOR & SIZE)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -16,24 +16,14 @@ st.markdown("""
         color: #FFFFFF; 
     }
     
-    /* 1. SCALE DOWN SIZE & CENTER */
-    [data-testid="stMetricValue"] { 
-        font-size: 32px !important; 
-        font-weight: 700 !important; 
-        justify-content: center !important; 
-    }
+    /* SCALE DOWN & CENTER LABELS */
     [data-testid="stMetricLabel"] { justify-content: center !important; font-size: 13px !important; color: #94A3B8 !important; }
     [data-testid="stMetric"] { text-align: center; }
 
-    /* 2. FORCE COLORS BY POSITION */
-    /* Column 1 (Risk, Efficiency) -> NEON BLUE */
-    [data-testid="column"]:nth-of-type(1) [data-testid="stMetricValue"] { color: #00F0FF !important; }
-    
-    /* Column 2 (Revenue, Annual Savings) -> NEON GREEN */
-    [data-testid="column"]:nth-of-type(2) [data-testid="stMetricValue"] { color: #00FFAB !important; }
-    
-    /* Column 3 (Confidence) -> GOLD */
-    [data-testid="column"]:nth-of-type(3) [data-testid="stMetricValue"] { color: #FFD700 !important; }
+    /* FORCED COLOR CLASSES */
+    .blue-metric [data-testid="stMetricValue"] { color: #00F0FF !important; font-size: 32px !important; font-weight: 700 !important; }
+    .green-metric [data-testid="stMetricValue"] { color: #00FFAB !important; font-size: 32px !important; font-weight: 700 !important; }
+    .gold-metric [data-testid="stMetricValue"] { color: #FFD700 !important; font-size: 32px !important; font-weight: 700 !important; }
 
     /* Buttons */
     .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; height: 40px; }
@@ -118,9 +108,13 @@ savings = ((risk/100) * clv) - ((sim_risk/100) * ((monthly * (1 - sim_discount/1
 st.markdown("---")
 m_col1, m_col2 = st.columns(2)
 with m_col1:
+    st.markdown('<div class="blue-metric">', unsafe_allow_html=True)
     st.metric("Simulated Risk", f"{sim_risk:.1f}%", help="New churn probability.")
+    st.markdown('</div>', unsafe_allow_html=True)
 with m_col2:
+    st.markdown('<div class="green-metric">', unsafe_allow_html=True)
     st.metric("Revenue Safeguarded", f"+${savings:,.2f}", help="Revenue protected.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # 8. SECTION 3: XAI
 st.markdown("---")
@@ -131,16 +125,22 @@ with x1:
 with x2:
     st.metric("Support Impact", "🔴 High" if not has_support else "🟢 Low", help="Support weight.")
 
-# 9. SECTION 4: MACRO (COLORED)
+# 9. SECTION 4: MACRO
 st.markdown("---")
 st.markdown('<p class="section-label">4. Macro Business Impact Projection</p>', unsafe_allow_html=True)
 bi1, bi2, bi3 = st.columns(3)
 with bi1: 
     macro_val = savings * 12 * (cfg['scale'] / 100)
+    st.markdown('<div class="green-metric">', unsafe_allow_html=True)
     st.metric("Annual Savings", f"+${macro_val:,.0f}", help="Total recovery.")
+    st.markdown('</div>', unsafe_allow_html=True)
 with bi2: 
+    st.markdown('<div class="blue-metric">', unsafe_allow_html=True)
     st.metric("Efficiency", "91%", help="AI model accuracy.")
+    st.markdown('</div>', unsafe_allow_html=True)
 with bi3: 
+    st.markdown('<div class="gold-metric">', unsafe_allow_html=True)
     st.metric("Confidence", "94.2%", help="Statistical certainty.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani | Predictive Analytics & XAI Deployment</p>", unsafe_allow_html=True)
