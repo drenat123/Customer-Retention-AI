@@ -6,7 +6,7 @@
 An end-to-end Machine Learning pipeline designed to solve customer attrition using **XGBoost** and **Explainable AI (SHAP)**. This project identifies high-value customers at risk and provides actionable behavioral insights for retention teams.
 
 ## 🚀 Live Demo
-[👉 View the Live Dashboard](PASTE_YOUR_STREAMLIT_URL_HERE)
+[👉 View the Live Dashboard](https://customer-retention-ai-cqjuv5mztzg7q6yng2fjhf.streamlit.app/))
 
 ## 🎯 Business Problem
 Acquiring new customers costs 5x more than retaining existing ones. This project provides a proactive solution by:
