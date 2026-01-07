@@ -6,10 +6,10 @@ import numpy as np
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 THE CHATGPT-OPTIMIZED NEON ENGINE
+# 🎨 THE OVERRIDE NEON ENGINE
 # ==========================================
 def neon_metric(label, value, color="#00FFAB"):
-    # Convert hex to rgba for text-shadow (Fixes the white text issue)
+    # Convert hex to rgba for glow
     def hex_to_rgba(hex_color, alpha=0.6):
         hex_color = hex_color.lstrip("#")
         r = int(hex_color[0:2], 16)
@@ -19,12 +19,13 @@ def neon_metric(label, value, color="#00FFAB"):
     
     glow = hex_to_rgba(color, 0.6)
     
+    # Adding !important to color to force the neon hue over Streamlit defaults
     html_code = f"""
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px;">
-        <p style="color: #94A3B8; font-size: 13px; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1.5px; font-family: 'Plus Jakarta Sans', sans-serif;">
+        <p style="color: #94A3B8 !important; font-size: 13px !important; text-transform: uppercase !important; margin-bottom: 5px !important; letter-spacing: 1.5px !important; font-family: 'Plus Jakarta Sans', sans-serif !important;">
             {label}
         </p>
-        <p style="color: {color}; font-size: 52px; font-weight: 700; text-shadow: 0 0 20px {glow}; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif;">
+        <p style="color: {color} !important; font-size: 52px !important; font-weight: 700 !important; text-shadow: 0 0 20px {glow} !important; margin: 0 !important; font-family: 'Plus Jakarta Sans', sans-serif !important;">
             {value}
         </p>
     </div>
@@ -40,23 +41,22 @@ st.markdown("""
     
     html, body, [data-testid="stAppViewContainer"] { 
         background-color: #0B0E14 !important; 
-        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
     
     .section-label { 
-        color: #00F0FF; 
-        font-size: 14px; 
-        font-weight: 600; 
-        text-transform: uppercase; 
-        letter-spacing: 2px;
-        margin-top: 40px; 
-        margin-bottom: 20px;
-        border-left: 3px solid #00F0FF;
-        padding-left: 15px;
+        color: #00F0FF !important; 
+        font-size: 14px !important; 
+        font-weight: 600 !important; 
+        text-transform: uppercase !important; 
+        letter-spacing: 2px !important;
+        margin-top: 40px !important; 
+        margin-bottom: 20px !important;
+        border-left: 3px solid #00F0FF !important;
+        padding-left: 15px !important;
     }
     
-    /* Clean up data editor */
-    [data-testid="stElementToolbar"] { display: none; }
+    [data-testid="stElementToolbar"] { display: none !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -98,7 +98,7 @@ with b3:
 with b4: 
     if st.button("50% VIP"): st.session_state.active_discount = 50
 
-# Logic for results (Example values from your screenshot)
+# Logic for results
 sim_risk = 17.3 - (st.session_state.active_discount * 0.1)
 savings = 148.42 + (st.session_state.active_discount * 4.5)
 
@@ -106,7 +106,7 @@ savings = 148.42 + (st.session_state.active_discount * 4.5)
 st.markdown("---")
 m1, m2 = st.columns(2)
 with m1:
-    # Logic: Orange for simulation values, Blue for lower
+    # Logic: Orange Warning, Blue Stable
     risk_color = "#FF8C00" if sim_risk > 15 else "#00F0FF"
     neon_metric("🔵 SIMULATED RISK", f"{sim_risk:.1f}%", color=risk_color)
 with m2:
