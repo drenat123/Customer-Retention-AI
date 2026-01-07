@@ -1,82 +1,96 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
 
-# 1. Page Setup
-st.set_page_config(page_title="Customer Health Monitor", layout="wide")
+# 1. Premium Page Config
+st.set_page_config(page_title="Executive Insights", layout="wide")
 
-# 2. Sidebar with simple explanation
-with st.sidebar:
-    st.title("What is this?")
-    st.write("""
-    This tool helps a business owner see which customers are 
-    happy and which ones are about to stop buying from you.
-    """)
-    st.write("**Goal:** Save customers before they leave.")
+# Custom CSS for a "Premium" feel (Clean fonts and spacing)
+st.markdown("""
+    <style>
+    .main { background-color: #0e1117; }
+    .stMetric { background-color: #161b22; border-radius: 10px; padding: 15px; border: 1px solid #30363d; }
+    </style>
+    """, unsafe_allow_html=True)
 
-# 3. Simple Header
-st.title("🛡️ Customer Health & Safety Dashboard")
-st.markdown("### Helping you keep your customers happy and loyal.")
-st.markdown("---")
+# 2. Sidebar Navigation
+st.sidebar.title("💎 Luxury Retail AI")
+menu = st.sidebar.radio("Navigate", ["Company Overview", "Customer Search", "Strategy Lab"])
 
-# 4. The "Big Three" Numbers (Simple Language)
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.metric("Model Trust Score", "98%", help="How accurate our predictions are.")
-with col2:
-    st.metric("Money at Risk", "$142,500", help="The total value of customers who are unhappy right now.")
-with col3:
-    st.metric("Loyalty Rate", "88%", help="The percentage of customers staying with us.")
+# --- DATASET (Simulated for your academy project) ---
+data = pd.DataFrame({
+    'Name': ['Tech Corp', 'Global Logistics', 'Retail Giant', 'Alpha Design', 'Omega Inc'],
+    'Status': ['🚨 Critical', '✅ Healthy', '⚠️ Warning', '✅ Healthy', '🚨 Critical'],
+    'Health_Score': [14, 92, 45, 88, 12],
+    'Revenue': [5000, 12000, 3500, 9000, 4200],
+    'Last_Contact': ['2 days ago', '1 month ago', '5 days ago', '2 weeks ago', 'Yesterday']
+})
 
-st.markdown("---")
-
-# 5. The "What-If" Simulator
-st.markdown("### 🧪 Customer Happiness Simulator")
-st.write("Move the sliders below to see how a customer's behavior changes their risk level.")
-
-c1, c2 = st.columns([1, 1])
-with c1:
-    usage = st.slider("How much less are they using the product? (%)", 0, 100, 20)
-    complaints = st.slider("How many complaints have they made?", 0, 10, 1)
+# ---------------------------------------------------------
+# TAB 1: COMPANY OVERVIEW
+# ---------------------------------------------------------
+if menu == "Company Overview":
+    st.title("Company Health Overview")
+    st.markdown("A bird's-eye view of your business stability.")
     
-    # Simple logic
-    risk_score = (usage * 0.7) + (complaints * 10)
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Revenue at Risk", "$9,200", "🚨")
+    col2.metric("Overall Loyalty", "84%", "+2%")
+    col3.metric("Active Saving Campaigns", "3", "Active")
 
-with c2:
-    if risk_score > 70:
-        st.error(f"⚠️ HIGH RISK ({risk_score:.0f}%)")
-        st.write("This customer is very unhappy. They need a phone call immediately!")
-    elif risk_score > 30:
-        st.warning(f"🟡 CAUTION ({risk_score:.0f}%)")
-        st.write("This customer is losing interest. Send them a discount or an email.")
+    st.markdown("---")
+    st.markdown("### Why are customers leaving?")
+    fig = px.bar(data, x='Name', y='Health_Score', color='Health_Score', 
+                 color_continuous_scale='RdYlGn', title="Individual Customer Health Scores")
+    st.plotly_chart(fig, use_container_width=True)
+
+# ---------------------------------------------------------
+# TAB 2: CUSTOMER SEARCH (The Specific Look-up)
+# ---------------------------------------------------------
+elif menu == "Customer Search":
+    st.title("Customer Intelligence Lookup")
+    
+    search_query = st.selectbox("Select a specific customer to inspect:", data['Name'])
+    
+    # Get specific customer data
+    user_data = data[data['Name'] == search_query].iloc[0]
+    
+    st.markdown(f"## Report for: {search_query}")
+    
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        st.write("**Current Status**")
+        st.subheader(user_data['Status'])
+    with c2:
+        st.write("**Customer Value**")
+        st.subheader(f"${user_data['Revenue']}")
+    with c3:
+        st.write("**Last Interaction**")
+        st.subheader(user_data['Last_Contact'])
+
+    st.markdown("---")
+    
+    # Visual Health Gauge
+    score = user_data['Health_Score']
+    st.write(f"**Health Rating: {score}/100**")
+    st.progress(score / 100)
+    
+    if score < 30:
+        st.error("🛑 ACTION REQUIRED: This customer is highly likely to leave. Schedule a meeting today.")
+    elif score < 60:
+        st.warning("⚠️ PROACTIVE OUTREACH: Send a loyalty bonus or check-in email.")
     else:
-        st.success(f"✅ HEALTHY ({risk_score:.0f}%)")
-        st.write("This customer is happy! Keep doing what you are doing.")
+        st.success("✨ ALL CLEAR: Customer is satisfied and engaged.")
 
-st.markdown("---")
-
-# 6. Why do customers leave?
-st.markdown("### ❓ Why do our customers leave?")
-st.write("This chart shows the biggest reasons people stop buying from us.")
-
-reasons = pd.DataFrame({
-    'Reason': ['Too Many Problems', 'Stopped Using It', 'Price too High', 'Better Competitor'],
-    'Impact': [45, 30, 15, 10]
-})
-
-fig = px.pie(reasons, values='Impact', names='Reason', hole=0.4, 
-             color_discrete_sequence=px.colors.sequential.RdBu)
-st.plotly_chart(fig, use_container_width=True)
-
-# 7. List of Unhappy Customers
-st.markdown("### 📋 Action List: Customers to Save")
-st.write("Here are the top customers you should contact today.")
-
-action_list = pd.DataFrame({
-    'Customer Name': ['Tech Corp', 'Global Logistics', 'Retail Giant'],
-    'Risk Status': ['🚨 Critical', '⚠️ Warning', '⚠️ Warning'],
-    'Reason': ['High Complaints', 'Stopped Using App', 'Using App Less'],
-    'Potential Loss': ['$5,000', '$2,100', '$1,500']
-})
-st.table(action_list)
+# ---------------------------------------------------------
+# TAB 3: STRATEGY LAB
+# ---------------------------------------------------------
+else:
+    st.title("Strategy Simulation Lab")
+    st.write("Test how changes in your service affect customer loyalty.")
+    
+    # Simple Slider Logic
+    service_quality = st.select_slider("Improve Support Speed", options=["Slow", "Average", "Fast", "Instant"])
+    price_change = st.slider("Price Discount (%)", 0, 50, 0)
+    
+    st.info(f"By choosing **{service_quality}** support and a **{price_change}%** discount, you could save an estimated **12%** more customers next month.")
