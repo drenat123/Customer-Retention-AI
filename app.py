@@ -6,36 +6,49 @@ import numpy as np
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 REACTIVE CSS ENGINE
+# 🎨 THE COLOR-FORCE ENGINE (The Secret Sauce)
 # ==========================================
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
     header, [data-testid="stHeader"] {{ display: none !important; }}
+    
+    /* Global Background */
     html, body, [class*="st-"] {{ 
         font-family: 'Plus Jakarta Sans', sans-serif; 
         background-color: #0B0E14 !important;
         color: #FFFFFF; 
     }}
 
-    /* --- THE REACTIVE COLORS --- */
-    /* GREEN for Good Outcomes */
+    /* THE MAGIC: We target the metric value based on what the label CONTAINS.
+       This prevents Streamlit from overwriting our colors.
+    */
+    
+    /* GREEN: For Good outcomes */
     div[data-testid="stMetric"]:has(label:contains("GOOD")) [data-testid="stMetricValue"],
     div[data-testid="stMetric"]:has(label:contains("SAFEGUARDED")) [data-testid="stMetricValue"],
-    div[data-testid="stMetric"]:has(label:contains("SAVINGS")) [data-testid="stMetricValue"] {{ color: #00FFAB !important; text-shadow: 0 0 10px rgba(0,255,171,0.3); }}
+    div[data-testid="stMetric"]:has(label:contains("SAVINGS")) [data-testid="stMetricValue"] {{ 
+        color: #00FFAB !important; 
+    }}
     
-    /* RED for Bad/Critical Outcomes */
+    /* RED: For Critical/High Risk */
     div[data-testid="stMetric"]:has(label:contains("CRITICAL")) [data-testid="stMetricValue"],
-    div[data-testid="stMetric"]:has(label:contains("LOW RECOVERY")) [data-testid="stMetricValue"],
-    div[data-testid="stMetric"]:has(label:contains("🔴")) [data-testid="stMetricValue"] {{ color: #FF4D4D !important; text-shadow: 0 0 10px rgba(255,77,77,0.3); }}
+    div[data-testid="stMetric"]:has(label:contains("HIGH")) [data-testid="stMetricValue"] {{ 
+        color: #FF4D4D !important; 
+    }}
 
-    /* CYAN for Neutral/Info */
+    /* BLUE: For Stable/Info */
     div[data-testid="stMetric"]:has(label:contains("STABLE")) [data-testid="stMetricValue"],
-    div[data-testid="stMetric"]:has(label:contains("EFFICIENCY")) [data-testid="stMetricValue"] {{ color: #00F0FF !important; }}
+    div[data-testid="stMetric"]:has(label:contains("EFFICIENCY")) [data-testid="stMetricValue"] {{ 
+        color: #00F0FF !important; 
+    }}
     
-    /* GOLD for Confidence */
-    div[data-testid="stMetric"]:has(label:contains("CONFIDENCE")) [data-testid="stMetricValue"] {{ color: #FFD700 !important; }}
+    /* GOLD: For Confidence */
+    div[data-testid="stMetric"]:has(label:contains("CONFIDENCE")) [data-testid="stMetricValue"] {{ 
+        color: #FFD700 !important; 
+    }}
 
+    /* Centering and Sizing */
     [data-testid="stMetricValue"] {{ font-size: 48px !important; font-weight: 700 !important; justify-content: center !important; }}
     [data-testid="stMetricLabel"] {{ justify-content: center !important; font-size: 14px !important; color: #94A3B8 !important; }}
     
@@ -56,22 +69,22 @@ n_cfg = {
 cfg = n_cfg[selected_niche]
 
 @st.cache_data
-def get_industry_data(prefix):
+def load_data(prefix):
     url = "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv"
     df = pd.read_csv(url).head(15)
     df['customerID'] = [f"{prefix}-{cid}" for cid in df['customerID']]
-    np.random.seed(42) 
+    np.random.seed(42)
     df['RiskScore'] = [f"{np.random.randint(10, 98)}%" for _ in range(len(df))]
     return df
 
-base_df = get_industry_data(cfg['prefix'])
+base_df = load_data(cfg['prefix'])
 
 if 'selected_id' not in st.session_state or not st.session_state.selected_id.startswith(cfg['prefix']):
     st.session_state.selected_id = base_df.iloc[0]['customerID']
 if 'active_discount' not in st.session_state:
     st.session_state.active_discount = 0
 
-# 3. SECTION 1: QUEUE
+# 3. QUEUE
 st.markdown('<p class="section-label">1. Automated Risk Priority Queue</p>', unsafe_allow_html=True)
 display_df = base_df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'RiskScore']].copy()
 display_df.insert(0, "Select", display_df['customerID'] == st.session_state.selected_id)
@@ -85,7 +98,7 @@ if not checked_rows.empty:
         st.session_state.selected_id = new_id
         st.rerun()
 
-# 4. SECTION 2: SIMULATION (TOOLTIPS RESTORED)
+# 4. SIMULATION
 target_id = st.session_state.selected_id
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
@@ -93,12 +106,12 @@ st.markdown(f'<p class="section-label">2. Simulation Lab: {target_id}</p>', unsa
 c1, c2 = st.columns(2)
 with c1:
     tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']), help="Loyalty duration: Higher tenure usually lowers risk.")
-    contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"], help="Contract tier impact on retention.")
+    contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"])
 with c2:
-    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="Monthly recurring revenue.")
-    has_support = st.checkbox("Simulate Priority Support?", value=True, help="Toggle human intervention impact.")
+    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']))
+    has_support = st.checkbox("Simulate Priority Support?", value=True)
 
-# Buttons
+# Offer Buttons
 b1, b2, b3, b4 = st.columns(4)
 with b1: st.button("No Offer", on_click=lambda: st.session_state.update({"active_discount": 0}))
 with b2: st.button("10% Off", on_click=lambda: st.session_state.update({"active_discount": 10}))
@@ -112,35 +125,34 @@ base_risk = max(5, min(95, base_risk - (tenure * 0.3)))
 sim_risk = max(5, base_risk - (st.session_state.active_discount * 0.6))
 savings = ((base_risk/100) * (monthly * 24)) - ((sim_risk/100) * ((monthly * (1 - st.session_state.active_discount/100)) * 24))
 
-# 5. DYNAMIC COLOR METRICS
+# 5. DYNAMIC COLOR RESULTS
 st.markdown("---")
 m1, m2 = st.columns(2)
 with m1:
-    # Logic: High risk (>35) turns RED, Low risk turns CYAN
-    risk_status = "🔴 CRITICAL RISK" if sim_risk > 35 else "🔵 STABLE RISK (GOOD)"
-    st.metric(risk_status, f"{sim_risk:.1f}%", help="Simulated likelihood of churn.")
+    # THE LOGIC: We change the label text so the CSS "Force Engine" picks it up
+    risk_label = "🔴 CRITICAL RISK" if sim_risk > 35 else "🔵 STABLE RISK (GOOD)"
+    st.metric(risk_label, f"{sim_risk:.1f}%", help="AI predicted churn probability.")
 with m2:
-    # Logic: High savings (>1000) turns GREEN, Low savings turns RED
-    save_status = "🟢 REVENUE SAFEGUARDED (GOOD)" if savings > 1000 else "🔴 LOW RECOVERY"
-    st.metric(save_status, f"+${savings:,.2f}", help="Revenue protected by this simulation.")
+    # High savings = GREEN label (Triggered by 'GOOD' in text)
+    save_label = "🟢 REVENUE SAFEGUARDED (GOOD)" if savings > 500 else "🔴 LOW RECOVERY"
+    st.metric(save_label, f"+${savings:,.2f}", help="Revenue protected by this simulation.")
 
 # 6. XAI & MACRO
 st.markdown("---")
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 x1, x2 = st.columns(2)
 with x1:
-    st.metric(f"IMPACT: {cfg['label']}", "🔴 HIGH RISK" if contract == "Standard" else "🟢 LOW RISK", help="Factor weighting.")
+    label_impact = "🔴 HIGH" if contract == "Standard" else "🟢 GOOD/LOW"
+    st.metric(f"IMPACT: {cfg['label']}", label_impact)
 with x2:
-    st.metric("IMPACT: SUPPORT", "🔴 HIGH RISK" if not has_support else "🟢 LOW RISK", help="Factor weighting.")
+    sup_impact = "🔴 HIGH" if not has_support else "🟢 GOOD/LOW"
+    st.metric("IMPACT: SUPPORT", sup_impact)
 
 st.markdown("---")
 st.markdown('<p class="section-label">4. Macro Business Impact</p>', unsafe_allow_html=True)
 bi1, bi2, bi3 = st.columns(3)
-with bi1:
-    st.metric("🟢 ANNUAL SAVINGS", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}", help="Projected yearly recovery.")
-with bi2:
-    st.metric("🔵 EFFICIENCY", "91%", help="Historical accuracy.")
-with bi3:
-    st.metric("🟡 CONFIDENCE", "94.2%", help="Model confidence.")
+with bi1: st.metric("🟢 ANNUAL SAVINGS", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}")
+with bi2: st.metric("🔵 EFFICIENCY", "91%")
+with bi3: st.metric("🟡 CONFIDENCE", "94.2%")
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani</p>", unsafe_allow_html=True)
