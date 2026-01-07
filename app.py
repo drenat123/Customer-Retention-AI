@@ -2,83 +2,88 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# 1. Page Config - Clean & Clinical
+# 1. Page Configuration
 st.set_page_config(page_title="Healthcare Revenue Integrity", layout="wide")
 
-# 2. Professional Medical Styling
+# 2. Corporate Styling (Genpact Standard Blue & Grey)
 st.markdown("""
     <style>
-    .stApp { background-color: #f8f9fa; color: #1e293b; }
-    [data-testid="stMetric"] {
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-    }
-    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
-    .stTabs [data-baseweb="tab"] {
-        background-color: #f1f5f9;
+    /* Main Background and Font */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    html, body, [class*="st-"] { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; }
+    
+    /* Metric Card Styling */
+    [data-testid="stMetricValue"] { font-size: 1.8rem !important; font-weight: 700 !important; color: #0F172A; }
+    [data-testid="stMetricLabel"] { font-size: 0.9rem !important; text-transform: uppercase; letter-spacing: 1px; color: #64748B; }
+    div[data-testid="stMetric"] {
+        background-color: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        padding: 1.5rem;
         border-radius: 8px;
-        padding: 10px 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-    h1, h2, h3 { color: #0f172a; font-family: 'Inter', sans-serif; }
+    
+    /* Remove Emojis and standard headers */
+    .stTabs [data-baseweb="tab-list"] { background-color: transparent; border-bottom: 2px solid #E2E8F0; }
+    .stTabs [data-baseweb="tab"] { color: #64748B; font-weight: 500; padding: 10px 20px; }
+    .stTabs [aria-selected="true"] { color: #2563EB !important; border-bottom: 2px solid #2563EB !important; }
+    
+    /* Error/Success messages custom look */
+    .stAlert { background-color: #FFFFFF; border: 1px solid #E2E8F0; border-left: 5px solid #2563EB; color: #1E293B; border-radius: 4px; }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Header
-st.title("🏥 Patient Retention & Revenue Integrity")
-st.markdown("##### Genpact-Inspired Healthcare Analytics Solution")
-
-tab1, tab2, tab3 = st.tabs(["📈 Portfolio Health", "👤 Patient Lookup", "🧬 Risk Predictor"])
-
 # --- DATASET ---
 patients = pd.DataFrame({
-    'Patient_Name': ['John Smith', 'Maria Garcia', 'Robert Chen', 'Sarah Miller'],
-    'Last_Visit': ['2 days ago', '15 days ago', '3 months ago', '6 months ago'],
-    'Wait_Time_Avg': [45, 12, 85, 90], # Minutes
-    'Billing_Issues': [1, 0, 3, 2],
-    'Churn_Risk': [22, 5, 78, 91]
+    'Patient_Identifier': ['P-1001', 'P-1002', 'P-1003', 'P-1004'],
+    'Risk_Score': [22, 5, 78, 91],
+    'Annual_Revenue': [5200, 12000, 3500, 9000],
+    'Status': ['Stable', 'Optimal', 'At Risk', 'Critical']
 })
 
-# --- TAB 1: EXECUTIVE OVERVIEW ---
-with tab1:
-    st.markdown("### Quarterly Patient Retention Metrics")
-    m1, m2, m3 = st.columns(3)
-    m1.metric("PATIENT LOYALTY", "94%", "+2.1%")
-    m2.metric("PROJECTED REVENUE LOSS", "$210K", "-12%", delta_color="inverse")
-    m3.metric("BILLING ACCURACY", "99.2%", "High")
-    
+# 3. Header
+st.markdown("<h2 style='margin-bottom:0;'>Healthcare Revenue Integrity Platform</h2>", unsafe_allow_html=True)
+st.markdown("<p style='color:#64748B; margin-top:0;'>Genpact Operational Excellence Framework</p>", unsafe_allow_html=True)
+
+# 4. Navigation
+tab_main, tab_search, tab_config = st.tabs(["Operations Overview", "Patient Record Search", "Risk Parameters"])
+
+# --- OPERATIONS OVERVIEW ---
+with tab_main:
+    st.markdown("### Portfolio Performance")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Patient Retention Rate", "94.2%", "Target: 92%")
+    col2.metric("Revenue Integrity Score", "98.8%", "Above Average")
+    col3.metric("Projected Leakage", "$210,400", "-4.1% MoM")
+
     st.markdown("---")
-    fig = px.bar(patients, x='Patient_Name', y='Churn_Risk', color='Churn_Risk',
-                 title="Patient Attrition Risk Score", color_continuous_scale='Bluered')
+    st.markdown("### Regional Attrition Distribution")
+    fig = px.bar(patients, x='Patient_Identifier', y='Risk_Score', 
+                 labels={'Risk_Score': 'Attrition Probability (%)'},
+                 color='Risk_Score', color_continuous_scale='Blues')
+    fig.update_layout(plot_bgcolor='white', paper_bgcolor='white', font_color='#64748B', height=350)
     st.plotly_chart(fig, use_container_width=True)
 
-# --- TAB 2: PATIENT DEEP-DIVE ---
-with tab2:
-    st.markdown("### Individual Patient Audit")
-    target = st.selectbox("Search Patient Records", patients['Patient_Name'])
-    p_data = patients[patients['Patient_Name'] == target].iloc[0]
+# --- PATIENT SEARCH ---
+with tab_search:
+    st.markdown("### Clinical Record Audit")
+    query = st.selectbox("Select Patient Identifier", patients['Patient_Identifier'])
+    p_row = patients[patients['Patient_Identifier'] == query].iloc[0]
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.write(f"**Patient:** {target}")
-        st.write(f"**Last Visit:** {p_data['Last_Visit']}")
-        st.write(f"**Average Wait Time:** {p_data['Wait_Time_Avg']} mins")
-    with col2:
-        risk = p_data['Churn_Risk']
-        st.write(f"**Attrition Probability: {risk}%**")
-        st.progress(risk / 100)
-        if risk > 70:
-            st.error("🚨 CRITICAL: High risk of switching providers. Recommend immediate follow-up.")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.info(f"Summary for {query}\nCurrent Status: {p_row['Status']}\nAnnual Value: ${p_row['Annual_Revenue']}")
+    with c2:
+        st.write("Calculated Risk Level")
+        st.progress(p_row['Risk_Score'] / 100)
+        st.write(f"The statistical probability of this patient seeking an alternative provider is {p_row['Risk_Score']}%.")
 
-# --- TAB 3: GENPACT STRATEGY LAB ---
-with tab3:
-    st.markdown("### Patient Experience Simulator")
-    st.write("Adjust service levels to see impact on patient retention.")
-    wait = st.slider("Target Wait Time (Minutes)", 5, 120, 30)
-    billing = st.radio("Automated Billing Efficiency", ["Low", "Medium", "High (Genpact Standard)"])
+# --- RISK PARAMETERS ---
+with tab_config:
+    st.markdown("### Predictive Modeling Variables")
+    st.write("Adjust operational thresholds to calculate potential attrition.")
+    billing_efficiency = st.select_slider("Billing Automation Level", options=["Manual", "Standard", "Advanced", "Elite"])
+    wait_threshold = st.slider("Max Acceptable Wait Time (Minutes)", 15, 60, 30)
     
-    # Logic: High billing efficiency and low wait times = low risk
-    predicted_risk = (wait * 0.5) - (20 if billing == "High (Genpact Standard)" else 0)
-    st.info(f"Predicted Attrition Rate for this Clinic: **{max(5, predicted_risk):.1f}%**")
+    potential_saving = 15 if billing_efficiency == "Elite" else 2
+    st.success(f"Strategic Result: Implementing this configuration would improve retention by {potential_saving}%.")
