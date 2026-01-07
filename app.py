@@ -5,7 +5,7 @@ import plotly.express as px
 # 1. Page Config
 st.set_page_config(page_title="AI Customer Analytics", layout="wide")
 
-# 2. STABLE PREMIUM CSS (No more glitching)
+# 2. STABLE PREMIUM CSS
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -24,18 +24,17 @@ st.markdown("""
         padding: 20px !important;
     }
 
-    /* 2. THE BADGE SLIDER (Stable Version) */
+    /* 2. THE BADGE SLIDER (Stable Cyan Badge) */
     .stSlider [data-baseweb="slider"] [role="slider"] {
         height: 30px !important;
-        width: 60px !important;
+        width: 65px !important;
         background-color: #00F0FF !important;
         border-radius: 6px !important;
         border: 2px solid #FFFFFF !important;
-        box-shadow: 0 0 10px rgba(0, 240, 255, 0.5) !important;
+        box-shadow: 0 0 15px rgba(0, 240, 255, 0.5) !important;
     }
     
-    /* 3. GLOWING SELECTIONS (Clean Highlight) */
-    /* This makes the selected 'Yes/No' radio button glow cyan */
+    /* 3. GLOWING SELECTIONS */
     div[data-testid="stWidgetLabel"] p { font-size: 1rem; color: #94A3B8; }
     
     .stRadio [role="radiogroup"] {
@@ -45,15 +44,13 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    /* Highlighting the active selection */
     div[aria-checked="true"] {
         background-color: rgba(0, 240, 255, 0.1) !important;
         border: 1px solid #00F0FF !important;
         border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+        box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
     }
 
-    /* SECTION HEADERS */
     .section-header { 
         color: #00F0FF; 
         font-size: 24px; 
@@ -66,7 +63,38 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Data Ingestion
+# ---------------------------------------------------------
+# SIDEBAR: KEY INSIGHTS (NEW ADDITION)
+# ---------------------------------------------------------
+with st.sidebar:
+    st.markdown("<h2 style='color: #00F0FF;'>🧠 Model Intelligence</h2>", unsafe_allow_html=True)
+    st.markdown("---")
+    
+    st.markdown("### 💰 Revenue Focus")
+    st.info("""
+    The **Executive Summary** converts ML predictions into dollars. 
+    By flagging $142.5K at risk, we prioritize retention efforts 
+    where the financial impact is highest.
+    """)
+    
+    st.markdown("### 🔍 Risk Auditing")
+    st.info("""
+    Every prediction includes a **Confidence Score**. 
+    High confidence means the AI has identified a clear 
+    pattern of churn based on historical behavior.
+    """)
+    
+    st.markdown("### 🔮 Prescriptive Action")
+    st.info("""
+    The **Inference Lab** doesn't just predict risk; 
+    it provides a strategic recommendation (e.g., Cross-selling 
+    vs. Retention Call) to guide your team's next move.
+    """)
+    
+    st.markdown("---")
+    st.caption("Developed by Drenat Nallbani")
+
+# 4. Data Ingestion
 @st.cache_data
 def load_data():
     url = "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv"
@@ -81,7 +109,7 @@ st.title("🛡️ AI Retention Hub")
 st.markdown("<p style='color: #64748B;'>Data Science Project by <b>Drenat Nallbani</b></p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# SECTION 1: THE BUSINESS PROBLEM (UNTOUCHED)
+# SECTION 1: THE BUSINESS PROBLEM
 # ---------------------------------------------------------
 st.markdown('<div class="section-header">1. The Business Problem</div>', unsafe_allow_html=True)
 st.write("Analyzing 7,043 records to identify patterns leading to customer churn.")
@@ -91,7 +119,7 @@ m2.metric("Portfolio Churn", "26.5%", "Network Wide")
 m3.metric("Annual Risk", "$142.5K", "-5.4% YoY")
 
 # ---------------------------------------------------------
-# SECTION 2: DATA VISUALIZATION (UNTOUCHED)
+# SECTION 2: DATA VISUALIZATION
 # ---------------------------------------------------------
 st.markdown('<div class="section-header">2. Exploring the Data</div>', unsafe_allow_html=True)
 c1, c2 = st.columns(2)
@@ -107,7 +135,7 @@ with c2:
     st.plotly_chart(fig_tenure, use_container_width=True)
 
 # ---------------------------------------------------------
-# SECTION 3: THE AI BRAIN (UNTOUCHED)
+# SECTION 3: THE AI BRAIN
 # ---------------------------------------------------------
 st.markdown('<div class="section-header">3. How the AI Thinks</div>', unsafe_allow_html=True)
 importance = pd.DataFrame({
@@ -120,7 +148,7 @@ fig_imp.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)
 st.plotly_chart(fig_imp, use_container_width=True)
 
 # ---------------------------------------------------------
-# SECTION 4: INTERACTIVE PREDICTOR (STABLE BADGE & GLOW)
+# SECTION 4: INTERACTIVE PREDICTOR
 # ---------------------------------------------------------
 st.markdown('<div class="section-header">4. Try the AI Yourself</div>', unsafe_allow_html=True)
 
@@ -138,7 +166,7 @@ with col_right:
     support_val = st.radio("Access to Tech Support?", ["Yes", "No"], horizontal=True)
     billing_val = st.radio("Paperless Billing?", ["Yes", "No"], horizontal=True)
 
-# AI Risk Calculation
+# AI Risk Calculation Logic
 score = 0
 if contract_val == "Month-to-month": score += 45
 if support_val == "No": score += 15
