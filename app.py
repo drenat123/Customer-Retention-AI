@@ -19,13 +19,18 @@ st.markdown("""
     .nba-badge { background: #00F0FF; color: #0B0E14; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
     .section-label { color: #00F0FF; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
     
-    /* NEW: SIMULATOR STYLING */
-    .simulator-panel {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px dashed #30363D;
-        border-radius: 12px;
-        padding: 20px;
-        margin-top: 20px;
+    /* STRATEGY BUTTON STYLING */
+    .stButton > button {
+        width: 100%;
+        background-color: #1C2128 !important;
+        color: #FFFFFF !important;
+        border: 1px solid #30363D !important;
+        border-radius: 8px !important;
+        transition: 0.2s;
+    }
+    .stButton > button:hover {
+        border-color: #00F0FF !important;
+        color: #00F0FF !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -65,7 +70,7 @@ st.markdown(f"""
 st.markdown("<p style='color: #484F58; font-size: 12px; margin-bottom: 30px;'>Engineered by <b>Drenat Nallbani</b></p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# SECTION 1: EXECUTIVE SUMMARY (PRESERVED)
+# SECTION 1: EXECUTIVE SUMMARY
 # ---------------------------------------------------------
 st.markdown('<p class="section-label">1. Executive Summary</p>', unsafe_allow_html=True)
 m1, m2, m3 = st.columns(3)
@@ -74,7 +79,7 @@ m2.metric("Portfolio Churn", "26.5%", "Avg")
 m3.metric("Projected Leakage", cfg['leakage'], "Risk")
 
 # ---------------------------------------------------------
-# SECTION 2: INFERENCE LAB (PRESERVED)
+# SECTION 2: INFERENCE LAB
 # ---------------------------------------------------------
 st.markdown('<p class="section-label" style="margin-top: 30px;">2. Inference Lab</p>', unsafe_allow_html=True)
 c1, c2 = st.columns(2)
@@ -91,52 +96,51 @@ if not has_support: risk += 15
 risk = max(5, min(95, risk - (tenure * 0.3)))
 
 # ---------------------------------------------------------
-# NEW IMPLEMENTATION: WHAT-IF REVENUE SIMULATOR
+# NEW IMPLEMENTATION: BUTTON-BASED STRATEGY SANDBOX
 # ---------------------------------------------------------
-st.markdown('<div class="simulator-panel">', unsafe_allow_html=True)
-st.markdown('<p class="section-label" style="color: #FFFFFF; font-size: 11px;">🛠️ WHAT-IF STRATEGY SANDBOX</p>', unsafe_allow_html=True)
+st.markdown("---")
+st.markdown('<p class="section-label" style="color: #FFFFFF; font-size: 11px;">🛠️ TEST RETENTION INCENTIVES</p>', unsafe_allow_html=True)
 
-col_sim1, col_sim2 = st.columns(2)
-with col_sim1:
-    sim_discount = st.select_slider("Apply Retention Discount (%)", options=[0, 10, 20, 30, 40, 50], value=0)
-with col_sim2:
-    sim_support = st.toggle("Simulate adding Premium Support", value=has_support)
+# Track current discount in session state
+if 'active_discount' not in st.session_state:
+    st.session_state.active_discount = 0
 
-# Dynamic Simulation Math
-sim_risk = risk
-if sim_discount > 0: sim_risk -= (sim_discount * 0.5) # Discounts lower risk
-if sim_support and not has_support: sim_risk -= 15 # Support lowers risk
-sim_risk = max(5, sim_risk)
+b1, b2, b3, b4 = st.columns(4)
+with b1:
+    if st.button("No Offer"): st.session_state.active_discount = 0
+with b2:
+    if st.button("10% Off"): st.session_state.active_discount = 10
+with b3:
+    if st.button("25% Off"): st.session_state.active_discount = 25
+with b4:
+    if st.button("50% VIP"): st.session_state.active_discount = 50
 
-# Financial Delta
-original_revenue = (risk / 100) * (monthly * 24)
-sim_revenue = (sim_risk / 100) * ((monthly * (1 - sim_discount/100)) * 24)
-savings = original_revenue - sim_revenue
+# Calculation
+sim_discount = st.session_state.active_discount
+sim_risk = max(5, risk - (sim_discount * 0.6))
+original_rev = (risk/100) * (monthly * 24)
+sim_rev = (sim_risk/100) * ((monthly * (1 - sim_discount/100)) * 24)
+savings = original_rev - sim_rev
 
 st.markdown(f"""
-    <div style="display: flex; gap: 20px; margin-top: 15px;">
-        <div><p style="color: #94A3B8; font-size: 12px; margin:0;">New Risk Score</p><h3 style="color: #00F0FF; margin:0;">{sim_risk:.1f}%</h3></div>
-        <div><p style="color: #94A3B8; font-size: 12px; margin:0;">Estimated Net Savings</p><h3 style="color: #00FFAB; margin:0;">+${savings:,.2f}</h3></div>
+    <div style="background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 12px; padding: 15px; display: flex; justify-content: space-around;">
+        <div style="text-align: center;"><p style="color: #94A3B8; font-size: 12px; margin:0;">Applied Offer</p><h4 style="color: #FFFFFF; margin:0;">{sim_discount}% Discount</h4></div>
+        <div style="text-align: center;"><p style="color: #94A3B8; font-size: 12px; margin:0;">Target Risk</p><h4 style="color: #00F0FF; margin:0;">{sim_risk:.1f}%</h4></div>
+        <div style="text-align: center;"><p style="color: #94A3B8; font-size: 12px; margin:0;">Net Revenue Save</p><h4 style="color: #00FFAB; margin:0;">+${savings:,.2f}</h4></div>
     </div>
 """, unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # STRATEGY ENGINE & TECHNICAL AUDIT (PRESERVED)
 # ---------------------------------------------------------
 st.markdown("---")
-if risk > 40:
-    icon, title, action = "🚨", "Risk Mitigation Plan", f"High-risk profile. Sandbox shows potential savings of <b>${savings:,.2f}</b> with proposed changes."
-else:
-    icon, title, action = "✅", "Growth Strategy", f"Stable profile. Focus on expansion to maximize 24-month LTV."
-
 st.markdown(f"""
     <div class="nba-card">
         <div class="nba-header">
             <span class="nba-badge">Action Plan</span>
-            <p style="color:white; font-size:18px; font-weight:600; margin:0;">{icon} {title}</p>
+            <p style="color:white; font-size:18px; font-weight:600; margin:0;">Dynamic Strategy</p>
         </div>
-        <div class="nba-body">{action}</div>
+        <div class="nba-body">With a {sim_discount}% discount applied, the risk drops to {sim_risk:.1f}%. This action projects a recovery of <b>${savings:,.2f}</b> over 24 months.</div>
     </div>
 """, unsafe_allow_html=True)
 
