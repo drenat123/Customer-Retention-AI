@@ -2,85 +2,83 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# 1. Page Config
-st.set_page_config(page_title="Executive Command Center", layout="wide", initial_sidebar_state="collapsed")
+# 1. Page Config - Clean & Clinical
+st.set_page_config(page_title="Healthcare Revenue Integrity", layout="wide")
 
-# 2. Ultra-Premium Styling (Custom CSS)
+# 2. Professional Medical Styling
 st.markdown("""
     <style>
-    /* Main Background */
-    .stApp { background-color: #050505; color: #ffffff; }
-    
-    /* Premium Metric Cards */
+    .stApp { background-color: #f8f9fa; color: #1e293b; }
     [data-testid="stMetric"] {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
         padding: 20px;
-        transition: 0.3s;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
-    [data-testid="stMetric"]:hover { border: 1px solid #00ff88; background: rgba(0, 255, 136, 0.02); }
-    
-    /* Buttons and Sliders */
-    .stSlider > div > div > div > div { background-color: #00ff88; }
-    
-    /* Tab Styling */
-    .stTabs [data-baseweb="tab-list"] { gap: 10px; }
+    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
     .stTabs [data-baseweb="tab"] {
-        background-color: rgba(255, 255, 255, 0.05);
-        border-radius: 10px 10px 0px 0px;
+        background-color: #f1f5f9;
+        border-radius: 8px;
         padding: 10px 20px;
-        color: white;
     }
+    h1, h2, h3 { color: #0f172a; font-family: 'Inter', sans-serif; }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Header & Navigation
-st.markdown("<h1 style='text-align: center; color: #00ff88; margin-bottom: 0;'>COMMAND CENTER</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; opacity: 0.6; margin-top: 0;'>AI-Powered Customer Intelligence Feed</p>", unsafe_allow_html=True)
+# 3. Header
+st.title("🏥 Patient Retention & Revenue Integrity")
+st.markdown("##### Genpact-Inspired Healthcare Analytics Solution")
 
-tab1, tab2, tab3 = st.tabs(["📊 Market Health", "🔍 Customer Deep-Dive", "🧪 Strategy Sandbox"])
+tab1, tab2, tab3 = st.tabs(["📈 Portfolio Health", "👤 Patient Lookup", "🧬 Risk Predictor"])
 
-# DATA (Simulated)
-data = pd.DataFrame({
-    'Name': ['Tech Corp', 'Global Logistics', 'Retail Giant', 'Alpha Design'],
-    'Risk': [88, 12, 45, 10],
-    'Value': [5000, 12000, 3500, 9000]
+# --- DATASET ---
+patients = pd.DataFrame({
+    'Patient_Name': ['John Smith', 'Maria Garcia', 'Robert Chen', 'Sarah Miller'],
+    'Last_Visit': ['2 days ago', '15 days ago', '3 months ago', '6 months ago'],
+    'Wait_Time_Avg': [45, 12, 85, 90], # Minutes
+    'Billing_Issues': [1, 0, 3, 2],
+    'Churn_Risk': [22, 5, 78, 91]
 })
 
-# --- TAB 1: DASHBOARD ---
+# --- TAB 1: EXECUTIVE OVERVIEW ---
 with tab1:
-    st.markdown("### National Overview")
+    st.markdown("### Quarterly Patient Retention Metrics")
     m1, m2, m3 = st.columns(3)
-    m1.metric("REVENUE AT RISK", "$142,500", "-5%")
-    m2.metric("HEALTH INDEX", "92/100", "+2")
-    m3.metric("SAVED REVENUE", "$45,200", "Live")
+    m1.metric("PATIENT LOYALTY", "94%", "+2.1%")
+    m2.metric("PROJECTED REVENUE LOSS", "$210K", "-12%", delta_color="inverse")
+    m3.metric("BILLING ACCURACY", "99.2%", "High")
     
     st.markdown("---")
-    fig = px.area(data, x='Name', y='Risk', title="Volatility Trend", 
-                 color_discrete_sequence=['#00ff88'])
-    fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', 
-                      font_color="white", height=300)
+    fig = px.bar(patients, x='Patient_Name', y='Churn_Risk', color='Churn_Risk',
+                 title="Patient Attrition Risk Score", color_continuous_scale='Bluered')
     st.plotly_chart(fig, use_container_width=True)
 
-# --- TAB 2: SEARCH ---
+# --- TAB 2: PATIENT DEEP-DIVE ---
 with tab2:
-    target = st.selectbox("Select Client", data['Name'])
-    client = data[data['Name'] == target].iloc[0]
+    st.markdown("### Individual Patient Audit")
+    target = st.selectbox("Search Patient Records", patients['Patient_Name'])
+    p_data = patients[patients['Patient_Name'] == target].iloc[0]
     
-    c1, c2 = st.columns([1, 2])
-    with c1:
-        st.markdown(f"## {target}")
-        st.write(f"Monthly Value: **${client['Value']}**")
-        st.write("Engagement Status: **Active**")
-    with c2:
-        # Progress bar for risk
-        r_color = "red" if client['Risk'] > 50 else "green"
-        st.markdown(f"<h3 style='color: {r_color}'>Risk Level: {client['Risk']}%</h3>", unsafe_allow_html=True)
-        st.progress(client['Risk'] / 100)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write(f"**Patient:** {target}")
+        st.write(f"**Last Visit:** {p_data['Last_Visit']}")
+        st.write(f"**Average Wait Time:** {p_data['Wait_Time_Avg']} mins")
+    with col2:
+        risk = p_data['Churn_Risk']
+        st.write(f"**Attrition Probability: {risk}%**")
+        st.progress(risk / 100)
+        if risk > 70:
+            st.error("🚨 CRITICAL: High risk of switching providers. Recommend immediate follow-up.")
 
-# --- TAB 3: LAB ---
+# --- TAB 3: GENPACT STRATEGY LAB ---
 with tab3:
-    st.markdown("### Risk Mitigation Simulator")
-    promo = st.select_slider("Loyalty Program Tier", options=["Basic", "Silver", "Gold", "Platinum"])
-    st.info(f"Applying **{promo}** tier incentives would likely reduce churn by **{20 if promo == 'Platinum' else 5}%**.")
+    st.markdown("### Patient Experience Simulator")
+    st.write("Adjust service levels to see impact on patient retention.")
+    wait = st.slider("Target Wait Time (Minutes)", 5, 120, 30)
+    billing = st.radio("Automated Billing Efficiency", ["Low", "Medium", "High (Genpact Standard)"])
+    
+    # Logic: High billing efficiency and low wait times = low risk
+    predicted_risk = (wait * 0.5) - (20 if billing == "High (Genpact Standard)" else 0)
+    st.info(f"Predicted Attrition Rate for this Clinic: **{max(5, predicted_risk):.1f}%**")
