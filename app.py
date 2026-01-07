@@ -172,3 +172,4 @@ if final_score > 50:
 else:
     st.success(f"Prediction: LOW RISK ({final_score:.1f}%)")
     st.info("💡 **Strategy:** Candidate for long-term service expansion.")
+
