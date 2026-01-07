@@ -5,8 +5,7 @@ import numpy as np
 # 1. PAGE CONFIG
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
-# 2. THE "FORCE COLOR" ENGINE
-# This uses 'data-testid' and direct attribute targeting to override the white color.
+# 2. THE ULTIMATE COLOR ENGINE (TARGETING THEME CLASSES)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -17,37 +16,28 @@ st.markdown("""
         color: #FFFFFF; 
     }
 
-    /* THE FIX: Forcing colors by targeting the specific metric value ID */
-    /* BLUE: Simulated Risk & Efficiency */
+    /* FORCING COLOR ON THE TEXT ITSELF BY TARGETING STREAMLIT'S INTERNAL DATA ATTRIBUTES */
     div[data-testid="stMetric"]:has(label:contains("Simulated Risk")) [data-testid="stMetricValue"],
     div[data-testid="stMetric"]:has(label:contains("Efficiency")) [data-testid="stMetricValue"] {
         color: #00F0FF !important;
-        -webkit-text-fill-color: #00F0FF !important;
+        fill: #00F0FF !important;
     }
     
-    /* GREEN: Revenue & Annual Savings */
     div[data-testid="stMetric"]:has(label:contains("Revenue Safeguarded")) [data-testid="stMetricValue"],
     div[data-testid="stMetric"]:has(label:contains("Annual Savings")) [data-testid="stMetricValue"] {
         color: #00FFAB !important;
-        -webkit-text-fill-color: #00FFAB !important;
+        fill: #00FFAB !important;
     }
     
-    /* GOLD: Confidence */
     div[data-testid="stMetric"]:has(label:contains("Confidence")) [data-testid="stMetricValue"] {
         color: #FFD700 !important;
-        -webkit-text-fill-color: #FFD700 !important;
+        fill: #FFD700 !important;
     }
 
-    /* RED/GREEN: Impact Indicators */
-    div[data-testid="stMetric"]:has(label:contains("Impact")) [data-testid="stMetricValue"] {
-        font-size: 28px !important;
-    }
-
-    /* RESTORE SIZE & CENTERING */
+    /* FONT SIZE & CENTERING */
     [data-testid="stMetricValue"] { font-size: 48px !important; font-weight: 700 !important; justify-content: center !important; }
     [data-testid="stMetricLabel"] { justify-content: center !important; font-size: 14px !important; color: #94A3B8 !important; }
-    [data-testid="stMetric"] { text-align: center; }
-
+    
     .section-label { color: #00F0FF; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; margin-top: 20px; }
     </style>
     """, unsafe_allow_html=True)
@@ -64,7 +54,7 @@ n_cfg = {
 }
 cfg = n_cfg[selected_niche]
 
-# 4. DATA ENGINE
+# 4. DATA ENGINE (FIXED INDEX ERROR)
 @st.cache_data
 def get_industry_data(n_name):
     url = "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv"
@@ -73,9 +63,11 @@ def get_industry_data(n_name):
     np.random.seed(42) 
     df['RiskScore'] = [f"{np.random.randint(10, 98)}%" for _ in range(len(df))]
     return df
+
 base_df = get_industry_data(selected_niche)
 
-if 'selected_id' not in st.session_state:
+# CRITICAL FIX: Ensure session_state ID exists in the NEW industry dataframe
+if 'selected_id' not in st.session_state or st.session_state.selected_id not in base_df['customerID'].values:
     st.session_state.selected_id = base_df.iloc[0]['customerID']
 
 # 5. SECTION 1: QUEUE
@@ -83,53 +75,53 @@ st.markdown('<p class="section-label">1. Automated Risk Priority Queue</p>', uns
 display_df = base_df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'RiskScore']].copy()
 display_df.insert(0, "Select", display_df['customerID'] == st.session_state.selected_id)
 display_df.columns = ['Select', 'Customer ID', 'Tenure', 'Value ($)', cfg['label'], 'AI Risk Score']
-edited_df = st.data_editor(display_df, hide_index=True, use_container_width=True)
+edited_df = st.data_editor(display_df, hide_index=True, use_container_width=True, key=f"editor_{selected_niche}")
 
-# 6. SECTION 2: SIMULATION LAB (FULL TOOLTIPS)
-target_id = st.session_state.selected_id
-selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
+# 6. SECTION 2: SIMULATION LAB (RESTORED TOOLTIPS)
+# Safe row lookup
+match = base_df[base_df['customerID'] == st.session_state.selected_id]
+selected_row = match.iloc[0] if not match.empty else base_df.iloc[0]
 
-st.markdown(f'<p class="section-label">2. Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
+st.markdown(f'<p class="section-label">2. Simulation Lab: {selected_row["customerID"]}</p>', unsafe_allow_html=True)
 c1, c2 = st.columns(2)
 with c1:
-    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']), help="Adjust the customer's loyalty duration to see exactly how time spent with the company influences their likelihood to churn.")
-    contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"], help=f"Simulate a change in the {cfg['label']}. Upgrading tiers often significantly reduces churn risk.")
+    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']), help="Adjust the customer's loyalty duration.")
+    contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"], help=f"Simulate a change in the {cfg['label']}.")
 with c2:
-    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="The recurring monthly revenue. This allows you to simulate how price adjustments or discounts impact the total revenue safeguard.")
-    has_support = st.checkbox("Simulate Priority Support?", value=True, help="Enable this to simulate the impact of adding a dedicated support agent to this specific account.")
+    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="The recurring monthly revenue.")
+    has_support = st.checkbox("Simulate Priority Support?", value=True, help="Toggle the impact of dedicated support.")
 
-# Logic
+# Retention Math
 risk = 35 if contract == "Standard" else 10
 if not has_support: risk += 15
 risk = max(5, min(95, risk - (tenure * 0.3)))
-clv = monthly * 24
-savings = ((risk/100) * clv)
+savings = ((risk/100) * (monthly * 24))
 
 st.markdown("---")
 m1, m2 = st.columns(2)
 with m1:
-    st.metric("Simulated Risk", f"{risk:.1f}%", help="The AI's predicted churn probability for this scenario. Lower is better.")
+    st.metric("Simulated Risk", f"{risk:.1f}%", help="AI's predicted churn probability.")
 with m2:
-    st.metric("Revenue Safeguarded", f"+${savings:,.2f}", help="Total dollar amount of revenue protected from loss.")
+    st.metric("Revenue Safeguarded", f"+${savings:,.2f}", help="Revenue protected from loss.")
 
 # 7. SECTION 3: XAI
 st.markdown("---")
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 x1, x2 = st.columns(2)
 with x1:
-    st.metric(f"{cfg['label']} Impact", "🔴 High" if contract == "Standard" else "🟢 Low", help="How much this factor is pushing the risk up or down.")
+    st.metric(f"{cfg['label']} Impact", "🔴 High" if contract == "Standard" else "🟢 Low")
 with x2:
-    st.metric("Support Impact", "🔴 High" if not has_support else "🟢 Low", help="The correlation between priority support and retention.")
+    st.metric("Support Impact", "🔴 High" if not has_support else "🟢 Low")
 
 # 8. SECTION 4: MACRO IMPACT
 st.markdown("---")
 st.markdown('<p class="section-label">4. Macro Business Impact Projection</p>', unsafe_allow_html=True)
 bi1, bi2, bi3 = st.columns(3)
 with bi1: 
-    st.metric("Annual Savings", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}", help="Projected department-wide recovery.")
+    st.metric("Annual Savings", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}")
 with bi2: 
-    st.metric("Efficiency", "91%", help="Historical accuracy of the AI model.")
+    st.metric("Efficiency", "91%")
 with bi3: 
-    st.metric("Confidence", "94.2%", help="Statistical certainty of the current prediction.")
+    st.metric("Confidence", "94.2%")
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani | Predictive Analytics & XAI Deployment</p>", unsafe_allow_html=True)
