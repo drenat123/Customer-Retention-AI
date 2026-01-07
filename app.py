@@ -5,13 +5,18 @@ import plotly.express as px
 # 1. Page Config
 st.set_page_config(page_title="AI Retention Hub", layout="wide")
 
-# 2. THE FIX: Hide the top bar and style the new button
+# 2. THE FIX: Hide Top Bar (keyboard_doubl) and Style Metrics
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
     
-    /* HIDE THE TOP BAR (Removes keyboard_doubl) */
+    /* HIDE TOP NAV BAR & KEYBOARD_DOUBL */
     header[data-testid="stHeader"] {
+        display: none !important;
+    }
+    
+    /* HIDE DEPLOY BUTTONS & MENU */
+    .stAppDeployButton {
         display: none !important;
     }
 
@@ -29,22 +34,6 @@ st.markdown("""
         padding: 20px !important;
     }
 
-    /* THE CYAN SLIDERS */
-    .stSlider [data-baseweb="slider"] [role="slider"] {
-        height: 30px !important;
-        width: 65px !important;
-        background-color: #00F0FF !important;
-        border-radius: 6px !important;
-        box-shadow: 0 0 15px rgba(0, 240, 255, 0.5) !important;
-    }
-    
-    /* GLOWING BUTTONS */
-    div[aria-checked="true"] {
-        background-color: rgba(0, 240, 255, 0.1) !important;
-        border: 1px solid #00F0FF !important;
-        box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
-    }
-
     .section-header { 
         color: #00F0FF; 
         font-size: 24px; 
@@ -56,18 +45,19 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. HEADER & INSIGHTS BUTTON
-st.markdown("<h1 style='color: white; margin-top: -50px;'>🛡️ AI Retention Hub</h1>", unsafe_allow_html=True)
+# 3. HEADER & UPDATED INSIGHTS BUTTON
+st.markdown("<h1 style='color: white; margin-top: -30px;'>🛡️ AI Retention Hub</h1>", unsafe_allow_html=True)
 
-# THE SIMPLE BUTTON YOU ASKED FOR
-if st.button("📊 View Model Insights"):
+# Corrected Titles to match your Section Headers
+if st.button("📊 View Project Insights"):
     st.info("""
-    **💰 Revenue Focus:** Flagging $142.5K at risk to prioritize financial impact.
-    **🔍 Risk Auditing:** Predictions include a Confidence Score (98%+) based on patterns.
-    **🔮 Prescriptive Action:** Provides strategic recommendations for retention calls.
+    **💰 1. The Business Problem:** We track $142.5K in projected leakage across 7,043 records.
+    **🔍 2. Exploring the Data:** Visualizing contract types and tenure to find churn patterns.
+    **🧠 3. How the AI Thinks:** Our model prioritizes Contract Type and Support Access.
+    **🔮 4. Predictor Lab:** Real-time risk assessment and retention recommendations.
     """)
 
-st.markdown("<p style='color: #64748B;'>By <b>Drenat Nallbani</b></p>", unsafe_allow_html=True)
+st.markdown("<p style='color: #64748B;'>Data Science Project by <b>Drenat Nallbani</b></p>", unsafe_allow_html=True)
 
 # 4. Data Ingestion
 @st.cache_data
@@ -88,7 +78,7 @@ st.write("Analyzing 7,043 records to identify patterns leading to customer churn
 m1, m2, m3 = st.columns(3)
 m1.metric("Database Scale", "7,043", "Real Records")
 m2.metric("Portfolio Churn", "26.5%", "Network Wide")
-m3.metric("Annual Risk", "$142.5K", "-5.4% YoY")
+m3.metric("Projected Leakage", "$142.5K", "-5.4% YoY")
 
 # ---------------------------------------------------------
 # SECTION 2: DATA VISUALIZATION
@@ -120,21 +110,22 @@ fig_imp.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)
 st.plotly_chart(fig_imp, use_container_width=True)
 
 # ---------------------------------------------------------
-# SECTION 4: INTERACTIVE PREDICTOR
+# SECTION 4: PREDICTOR LAB (Sliders Removed)
 # ---------------------------------------------------------
-st.markdown('<div class="section-header">4. Try the AI Yourself</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-header">4. Predictor Lab</div>', unsafe_allow_html=True)
 
 col_left, col_right = st.columns(2)
 
 with col_left:
     st.subheader("Loyalty Metrics")
-    tenure_val = st.slider("Customer Tenure (Months)", 1, 72, 39)
+    # Sliders replaced with simple number inputs to stop the glitching
+    tenure_val = st.number_input("Customer Tenure (Months)", 1, 72, 39)
     contract_val = st.selectbox("Contract Framework", ["Month-to-month", "One year", "Two year"])
     internet_val = st.selectbox("Internet Service Type", ["DSL", "Fiber optic", "No Internet"])
 
 with col_right:
     st.subheader("Support & Billing")
-    monthly_val = st.slider("Monthly Charges ($)", 18, 120, 100)
+    monthly_val = st.number_input("Monthly Billing ($)", 18, 120, 100)
     support_val = st.radio("Access to Tech Support?", ["Yes", "No"], horizontal=True)
     billing_val = st.radio("Paperless Billing?", ["Yes", "No"], horizontal=True)
 
@@ -148,5 +139,7 @@ final_score = max(5, min(95, score))
 st.markdown("---")
 if final_score > 50:
     st.error(f"Prediction: HIGH RISK ({final_score:.1f}%)")
+    st.info("💡 **Recommendation:** High priority for retention call.")
 else:
     st.success(f"Prediction: LOW RISK ({final_score:.1f}%)")
+    st.info("💡 **Recommendation:** Candidate for service expansion.")
