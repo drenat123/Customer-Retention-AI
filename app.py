@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# 1. Page Config
+# 1. Page Config (RESTORED)
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
-# 2. THE ULTIMATE CSS ENGINE (LOCKED & RESTORED)
+# 2. THE ULTIMATE CSS ENGINE (RESTORED & LOCKED)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -15,10 +15,12 @@ st.markdown("""
         background-color: #0B0E14 !important;
         color: #FFFFFF; 
     }
+    .glass-card { background: #161B22; border: 1px solid #30363D; border-radius: 12px; padding: 24px; margin-bottom: 25px; }
     .section-label { color: #00F0FF; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
     .metric-container { text-align: center; }
     .how-to { color: #484F58; font-size: 12px; margin-top: -10px; margin-bottom: 15px; font-style: italic; }
     .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; }
+    .stButton > button:hover { border-color: #00F0FF !important; color: #00F0FF !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -35,7 +37,7 @@ niche_configs = {
 }
 cfg = niche_configs[selected_niche]
 
-# 4. DATA GENERATOR
+# 4. LIVE DATA GENERATOR
 @st.cache_data
 def get_industry_data(niche):
     url = "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv"
@@ -47,45 +49,23 @@ def get_industry_data(niche):
     df['RiskScore'] = [f"{np.random.randint(10, 98)}%" for _ in range(len(df))]
     return df
 
-base_df = get_industry_data(selected_niche)
+df = get_industry_data(selected_niche)
 
-# 5. SINGLE SELECTION STATE FIX
-# If industry changes, reset the selected ID to the first item of the new list to prevent IndexError
-if 'last_niche' not in st.session_state or st.session_state.last_niche != selected_niche:
-    st.session_state.selected_id = base_df.iloc[0]['customerID']
-    st.session_state.last_niche = selected_niche
+# 5. RISK LEADERBOARD (DESCRIPTIONS RESTORED)
+st.markdown('<p class="section-label" style="margin-top:20px;">1. Automated Risk Priority Queue</p>', unsafe_allow_html=True)
+st.markdown(f'<p class="how-to">Live {selected_niche} database ranked by AI-predicted churn risk.</p>', unsafe_allow_html=True)
 
-# 6. RISK LEADERBOARD (ALL DESCRIPTIONS RESTORED)
-st.markdown(f'<p class="section-label" style="margin-top:20px;">1. Automated Risk Priority Queue</p>', unsafe_allow_html=True)
-st.markdown(f'<p class="how-to">Live {selected_niche} database ranked by predicted attrition risk. Check one "Select" box to load a specific user into the lab.</p>', unsafe_allow_html=True)
+display_df = df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'RiskScore']].copy()
+display_df.columns = ['Customer ID', 'Tenure', 'Value ($)', cfg['label'], 'AI Risk Score']
+st.dataframe(display_df, use_container_width=True, hide_index=True)
 
-display_df = base_df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'RiskScore']].copy()
-display_df.insert(0, "Select", display_df['customerID'] == st.session_state.selected_id)
-display_df.columns = ['Select', 'Customer ID', 'Tenure', 'Value ($)', cfg['label'], 'AI Risk Score']
+# 6. SELECTION BOX (RESTORED)
+target_id = st.selectbox("🎯 Select Customer ID to Load for Simulation", df['customerID'].tolist())
+selected_row = df[df['customerID'] == target_id].iloc[0]
 
-edited_df = st.data_editor(
-    display_df,
-    hide_index=True,
-    column_config={"Select": st.column_config.CheckboxColumn(required=True)},
-    disabled=['Customer ID', 'Tenure', 'Value ($)', cfg['label'], 'AI Risk Score'],
-    use_container_width=True,
-    key=f"editor_{selected_niche}" # Keyed to niche to force reset on switch
-)
-
-# Force Single Selection Logic
-checked_rows = edited_df[edited_df['Select'] == True]
-if not checked_rows.empty:
-    new_id = checked_rows.iloc[-1]['Customer ID']
-    if new_id != st.session_state.selected_id:
-        st.session_state.selected_id = new_id
-        st.rerun()
-
-# 7. INFERENCE LAB (ALL DESCRIPTIONS RESTORED)
-selected_row = base_df[base_df['customerID'] == st.session_state.selected_id].iloc[0]
-target_id = st.session_state.selected_id
-
+# 7. SIMULATION LAB (DESCRIPTIONS RESTORED)
 st.markdown(f'<p class="section-label" style="margin-top: 30px;">2. Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
-st.markdown('<p class="how-to">Test "What-If" scenarios to lower this customer\'s specific risk score.</p>', unsafe_allow_html=True)
+st.markdown('<p class="how-to">Adjust values to see how different retention strategies change this specific user\'s risk.</p>', unsafe_allow_html=True)
 
 c1, c2 = st.columns(2)
 with c1:
@@ -95,16 +75,17 @@ with c2:
     monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']))
     has_support = st.checkbox("Simulate Priority Support?", value=(selected_row['OnlineSecurity'] == "Yes"))
 
-# Logic calculations
+# 8. LOGIC ENGINE
 risk = 35 if contract == "Standard" else 10
 if not has_support: risk += 15
 risk = max(5, min(95, risk - (tenure * 0.3)))
+clv = monthly * 24
 
-# 8. RETENTION SANDBOX (BUTTONS RESTORED)
+# 9. RETENTION SANDBOX (RESTORED)
 st.markdown("---")
 if 'active_discount' not in st.session_state: st.session_state.active_discount = 0
 b1, b2, b3, b4 = st.columns(4)
-with b1: 
+with b1:
     if st.button("No Offer"): st.session_state.active_discount = 0
 with b2:
     if st.button("10% Off"): st.session_state.active_discount = 10
@@ -115,7 +96,6 @@ with b4:
 
 sim_discount = st.session_state.active_discount
 sim_risk = max(5, risk - (sim_discount * 0.6))
-clv = monthly * 24
 savings = ((risk/100) * clv) - ((sim_risk/100) * ((monthly * (1 - sim_discount/100)) * 24))
 
 st.markdown(f"""
@@ -125,7 +105,7 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# 9. XAI & BUSINESS IMPACT (ALL DESCRIPTIONS RESTORED)
+# 10. XAI & BUSINESS IMPACT (DESCRIPTIONS RESTORED)
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 st.markdown('<p class="how-to">Visualizes the top factors driving this customer\'s risk score.</p>', unsafe_allow_html=True)
 st.markdown(f"<p style='color: #94A3B8; font-size: 14px;'>Key Driver: <span style='color: white;'>{cfg['label']}</span></p>", unsafe_allow_html=True)
