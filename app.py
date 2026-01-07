@@ -3,7 +3,7 @@ import streamlit as st
 # 1. Page Config
 st.set_page_config(page_title="AI Retention Hub", layout="wide")
 
-# 2. THE ULTIMATE CSS ENGINE (FIXES BLACK BOXES & RESTORES UI)
+# 2. THE ULTIMATE CSS ENGINE (CLEAN & TRANSPARENT)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -18,30 +18,42 @@ st.markdown("""
     /* THE STABLE GLASS CARD */
     .glass-card { background: #161B22; border: 1px solid #30363D; border-radius: 12px; padding: 24px; margin-bottom: 25px; }
 
-    /* NUCLEAR FIX FOR BLACK BOXES */
-    div[data-testid="stMarkdownContainer"] {
+    /* NUCLEAR FIX FOR BLACK/BLUE BOXES & TRANSPARENCY */
+    div[data-testid="stMarkdownContainer"], 
+    div[data-testid="stVerticalBlock"], 
+    div[data-testid="stHorizontalBlock"] {
         background-color: transparent !important;
-    }
-    div[data-testid="stMarkdownContainer"] > p, 
-    div[data-testid="stMarkdownContainer"] > h2,
-    div[data-testid="stMarkdownContainer"] > h4 {
-        background: none !important;
-        background-color: transparent !important;
+        background: transparent !important;
         border: none !important;
     }
 
-    /* RESTORING PREVIOUS STYLES */
+    /* BUTTONS: REMOVING GREY/BLUE BACKGROUNDS & BORDERS */
+    .stButton > button {
+        width: 100%;
+        background-color: transparent !important; /* Makes background transparent */
+        color: #FFFFFF !important;
+        border: 1px solid #30363D !important; /* Thin subtle border */
+        border-radius: 8px !important;
+        box-shadow: none !important;
+    }
+    
+    .stButton > button:hover {
+        border-color: #00F0FF !important;
+        color: #00F0FF !important;
+    }
+
+    /* CUSTOM METRIC STYLE (NO BACKGROUND) */
+    .metric-container {
+        text-align: center;
+        background: transparent !important;
+    }
+
+    /* PREVIOUS STYLES PRESERVED */
     .niche-tag { background: rgba(0, 240, 255, 0.1); border: 1px solid #00F0FF; color: #00F0FF; padding: 2px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-right: 8px; }
     .nba-card { background: linear-gradient(145deg, #161B22, #0D1117); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 16px; padding: 25px; margin-bottom: 25px; }
     .nba-badge { background: #00F0FF; color: #0B0E14; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
     .section-label { color: #00F0FF; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
-    
-    /* STRATEGY TAGS */
     .strategy-tag { background: #00F0FF; color: #0B0E14; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; margin-right: 8px; }
-    
-    /* BUTTONS */
-    .stButton > button { width: 100%; background-color: #1C2128 !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; }
-    .stButton > button:hover { border-color: #00F0FF !important; color: #00F0FF !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -100,13 +112,13 @@ if not has_support: risk += 15
 risk = max(5, min(95, risk - (tenure * 0.3)))
 clv = monthly * 24
 
-# RESTORED LTV SECTION
+# LTV SECTION (NO BACKGROUNDS)
 st.markdown("---")
 l1, l2 = st.columns(2)
 l1.metric("Individual LTV (24mo)", f"${clv:,.0f}")
 l2.metric("Revenue at Risk", f"${(risk/100)*clv:,.2f}", f"{risk:.1f}% Risk")
 
-# 3. STRATEGY SANDBOX
+# 3. STRATEGY SANDBOX (TRANSPARENT BUTTONS & AREA)
 st.markdown("---")
 st.markdown('<p class="section-label" style="color: #FFFFFF; font-size: 11px;">🛠️ TEST RETENTION INCENTIVES</p>', unsafe_allow_html=True)
 
@@ -128,25 +140,25 @@ original_rev = (risk/100) * clv
 sim_rev = (sim_risk/100) * ((monthly * (1 - sim_discount/100)) * 24)
 savings = original_rev - sim_rev
 
-# SANDBOX RESULTS (FIXED BLACK BOXES)
+# RESULTS AREA (NOW COMPLETELY TRANSPARENT)
 st.markdown(f"""
-    <div style="background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 12px; padding: 20px; display: flex; justify-content: space-around; align-items: center;">
-        <div style="text-align: center;">
+    <div style="background: transparent; border-top: 1px solid #30363D; border-bottom: 1px solid #30363D; padding: 20px 0px; display: flex; justify-content: space-around; align-items: center; margin: 20px 0;">
+        <div class="metric-container">
             <p style="color: #94A3B8; font-size: 12px; margin:0;">Applied Offer</p>
             <h2 style="color: #FFFFFF; margin:0; font-weight: 600;">{sim_discount}%</h2>
         </div>
-        <div style="text-align: center;">
+        <div class="metric-container">
             <p style="color: #94A3B8; font-size: 12px; margin:0;">Target Risk</p>
             <h2 style="color: #00F0FF; margin:0; font-weight: 600;">{sim_risk:.1f}%</h2>
         </div>
-        <div style="text-align: center;">
+        <div class="metric-container">
             <p style="color: #94A3B8; font-size: 12px; margin:0;">Net Revenue Save</p>
             <h2 style="color: #00FFAB; margin:0; font-weight: 600;">+${savings:,.2f}</h2>
         </div>
     </div>
 """, unsafe_allow_html=True)
 
-# 4. XAI SECTION (RESTORED FROM SCREENSHOTS)
+# 4. XAI SECTION
 st.markdown("---")
 st.markdown('<p class="section-label">Feature Contribution (XAI)</p>', unsafe_allow_html=True)
 xai_c1, xai_c2 = st.columns(2)
@@ -155,7 +167,7 @@ with xai_c1:
 with xai_c2:
     st.markdown(f"<p style='color: #94A3B8; font-size: 14px;'>Support Impact: <span style='color: #00FFAB;'>🟢 Low</span></p>", unsafe_allow_html=True)
 
-# 5. STRATEGY PLAYBOOK (RESTORED FROM SCREENSHOTS)
+# 5. STRATEGY PLAYBOOK
 rec_title = "Loyalty Upsell" if risk < 30 else "Revenue Rescue"
 rec_body = "Stable user detected. Trigger VIP Referral Program." if risk < 30 else "Volatile user. Deploy automated retention discount."
 
