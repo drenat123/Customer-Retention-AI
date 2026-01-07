@@ -5,7 +5,7 @@ import numpy as np
 # 1. Page Config
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
-# 2. THE ULTIMATE CSS ENGINE (LOCKED)
+# 2. THE ULTIMATE CSS ENGINE (LOCKED & CLEANED)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -18,17 +18,10 @@ st.markdown("""
     .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; }
     .stButton > button:hover { border-color: #00F0FF !important; color: #00F0FF !important; }
     .section-label { color: #00F0FF; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
-    .metric-container { text-align: center; }
+    .metric-container { text-align: center; padding: 10px; }
     .how-to { color: #484F58; font-size: 12px; margin-top: -10px; margin-bottom: 15px; font-style: italic; }
-    /* Remove borders from the small info popovers to keep it clean */
-    div[data-testid="stPopover"] > button { 
-        border: none !important; 
-        background: transparent !important; 
-        padding: 0 !important;
-        min-height: 0 !important;
-        width: auto !important;
-        float: right;
-    }
+    /* Target the small help icon color to match your green/cyan theme */
+    .stTooltipIcon { color: #00F0FF !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -85,7 +78,6 @@ edited_df = st.data_editor(
     key=f"editor_{selected_niche}"
 )
 
-# Enforce single selection
 checked_rows = edited_df[edited_df['Select'] == True]
 if not checked_rows.empty:
     new_id = checked_rows.iloc[-1]['Customer ID']
@@ -127,14 +119,12 @@ sim_discount = st.session_state.active_discount
 sim_risk = max(5, risk - (sim_discount * 0.6))
 savings = ((risk/100) * clv) - ((sim_risk/100) * ((monthly * (1 - sim_discount/100)) * 24))
 
-# METRICS WITH CLEAN INFO ICONS
+# CLEAN METRICS WITH THE HOVER ICONS IN THE LABELS
 m_col1, m_col2 = st.columns(2)
 with m_col1:
-    st.popover(" ", help="The new churn probability based on selected simulations.").markdown("") # Clean Hover Icon
-    st.markdown(f'<div class="metric-container"><p style="color: #94A3B8; font-size: 12px; margin:0;">Simulated Risk</p><h2 style="color: #00F0FF; margin:0;">{sim_risk:.1f}%</h2></div>', unsafe_allow_html=True)
+    st.text_input("Simulated Risk", value=f"{sim_risk:.1f}%", disabled=True, help="The new churn probability based on selected simulations.")
 with m_col2:
-    st.popover(" ", help="Estimated dollar amount protected by reducing risk.").markdown("") # Clean Hover Icon
-    st.markdown(f'<div class="metric-container"><p style="color: #94A3B8; font-size: 12px; margin:0;">Revenue Safeguarded</p><h2 style="color: #00FFAB; margin:0;">+${savings:,.2f}</h2></div>', unsafe_allow_html=True)
+    st.text_input("Revenue Safeguarded", value=f"+${savings:,.2f}", disabled=True, help="Estimated dollar amount protected by reducing risk.")
 
 # 9. XAI & BUSINESS IMPACT
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
@@ -142,26 +132,22 @@ st.markdown('<p class="how-to">Visualizes the top factors driving this customer\
 
 xai_c1, xai_c2 = st.columns(2)
 with xai_c1:
-    st.popover(" ", help="Shows how much the contract type pushes risk up/down.").markdown("")
-    st.markdown(f"<p style='color: #94A3B8; font-size: 14px;'>{cfg['label']} Impact: <span style='color: white;'>{'🔴 High' if contract == 'Standard' else '🟢 Low'}</span></p>", unsafe_allow_html=True)
+    st.info(f"{cfg['label']} Impact: {'🔴 High' if contract == 'Standard' else '🟢 Low'}", icon="⚖️")
+    # This empty selection box is just to host the clean help icon you wanted
+    st.write("", help="Shows how much the contract type pushes risk up/down.")
 with xai_c2:
-    st.popover(" ", help="Correlation between support and churn intent.").markdown("")
-    st.markdown(f"<p style='color: #94A3B8; font-size: 14px;'>Support Impact: <span style='color: white;'>{'🔴 High' if not has_support else '🟢 Low'}</span></p>", unsafe_allow_html=True)
+    st.info(f"Support Impact: {'🔴 High' if not has_support else '🟢 Low'}", icon="🛠️")
+    st.write("", help="Correlation between support and churn intent.")
 
 st.markdown("---")
 st.markdown('<p class="section-label">4. Macro Business Impact Projection</p>', unsafe_allow_html=True)
-st.markdown('<p class="how-to">Projected annual savings if this model is deployed across the entire department.</p>', unsafe_allow_html=True)
 
-recovered_leakage = cfg['leakage'] * 0.22 
 bi1, bi2, bi3 = st.columns(3)
 with bi1: 
-    st.popover(" ", help="Total revenue recovery based on 22% model efficiency.").markdown("")
-    st.markdown(f"<div class='metric-container'><p style='color:#94A3B8; font-size:12px;'>Annual Savings</p><h2 style='color:#00FFAB; margin:0;'>+${recovered_leakage:,.0f}</h2></div>", unsafe_allow_html=True)
+    st.text_input("Annual Savings", value=f"+${cfg['leakage'] * 0.22:,.0f}", disabled=True, help="Total revenue recovery based on 22% model efficiency.")
 with bi2: 
-    st.popover(" ", help="Accuracy of AI in identifying genuine churn threats.").markdown("")
-    st.markdown(f"<div class='metric-container'><p style='color:#94A3B8; font-size:12px;'>Efficiency</p><h2 style='color:#00F0FF; margin:0;'>91%</h2></div>", unsafe_allow_html=True)
+    st.text_input("Efficiency", value="91%", disabled=True, help="Accuracy of AI in identifying genuine churn threats.")
 with bi3: 
-    st.popover(" ", help="Statistical confidence interval for predictions.").markdown("")
-    st.markdown(f"<div class='metric-container'><p style='color:#94A3B8; font-size:12px;'>Confidence</p><h2 style='color:#FFFFFF; margin:0;'>94.2%</h2></div>", unsafe_allow_html=True)
+    st.text_input("Confidence", value="94.2%", disabled=True, help="Statistical confidence interval for predictions.")
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani | Predictive Analytics & XAI Deployment</p>", unsafe_allow_html=True)
