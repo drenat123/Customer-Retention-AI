@@ -5,7 +5,7 @@ import numpy as np
 # 1. Page Config
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
-# 2. THE ULTIMATE CSS ENGINE (LOCKED & PRESERVED)
+# 2. THE ULTIMATE CSS ENGINE (PRESERVED)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -15,25 +15,24 @@ st.markdown("""
         background-color: #0B0E14 !important;
         color: #FFFFFF; 
     }
-    .glass-card { background: #161B22; border: 1px solid #30363D; border-radius: 12px; padding: 24px; margin-bottom: 25px; }
-    div[data-testid="stMarkdownContainer"], div[data-testid="stVerticalBlock"], div[data-testid="stHorizontalBlock"] {
-        background-color: transparent !important; border: none !important;
-    }
     .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; }
     .stButton > button:hover { border-color: #00F0FF !important; color: #00F0FF !important; }
-    .section-label { color: #00F0FF; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; display: inline-block; }
+    .section-label { color: #00F0FF; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
     .metric-container { text-align: center; }
     .how-to { color: #484F58; font-size: 12px; margin-top: -10px; margin-bottom: 15px; font-style: italic; }
-    /* Tooltip Icon Style */
-    .info-icon { color: #484F58; font-size: 14px; cursor: help; margin-left: 8px; }
+    /* Fix for native tooltip icon alignment */
+    .stTooltipIcon { color: #00F0FF !important; }
     </style>
     """, unsafe_allow_html=True)
 
 # 3. BRANDING & NICHE SELECTOR
 st.markdown("<h1 style='color: white; margin-top: -60px; font-size: 32px;'>🛡️ AI Retention Hub</h1>", unsafe_allow_html=True)
 
-selected_niche = st.selectbox("📂 Select Industry Database", ["Telecommunications", "Healthcare", "SaaS", "Banking"], 
-                             help="Changing this will reload the database and update the model parameters.")
+selected_niche = st.selectbox(
+    "📂 Select Industry Database", 
+    ["Telecommunications", "Healthcare", "SaaS", "Banking"], 
+    help="Switching the database re-calibrates the AI model for industry-specific churn patterns (e.g., Banking risk vs SaaS churn)."
+)
 
 niche_configs = {
     "Telecommunications": {"scale": 7043, "leakage": 142500, "label": "Contract Type", "prefix": "TELCO"},
@@ -63,15 +62,9 @@ if 'selected_id' not in st.session_state or st.session_state.get('prev_niche') !
     st.session_state.prev_niche = selected_niche
 
 # 6. RISK LEADERBOARD
-col_h1, col_h2 = st.columns([0.9, 0.1])
-with col_h1:
-    st.markdown('<p class="section-label" style="margin-top:20px;">1. Automated Risk Priority Queue</p>', unsafe_allow_html=True)
-with col_h2:
-    st.button("❓", help="This table displays live users ranked by attrition risk. Select ONE user to simulate retention strategies.", key="h1")
-
+st.markdown('<p class="section-label" style="margin-top:20px;">1. Automated Risk Priority Queue</p>', unsafe_allow_html=True)
 st.markdown(f'<p class="how-to">Live {selected_niche} database ranked by predicted attrition risk.</p>', unsafe_allow_html=True)
 
-# Build selection table
 display_df = base_df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'RiskScore']].copy()
 display_df.insert(0, "Select", display_df['customerID'] == st.session_state.selected_id)
 display_df.columns = ['Select', 'Customer ID', 'Tenure', 'Value ($)', cfg['label'], 'AI Risk Score']
@@ -79,7 +72,13 @@ display_df.columns = ['Select', 'Customer ID', 'Tenure', 'Value ($)', cfg['label
 edited_df = st.data_editor(
     display_df,
     hide_index=True,
-    column_config={"Select": st.column_config.CheckboxColumn("Select", help="Check to load user into Lab", default=False)},
+    column_config={
+        "Select": st.column_config.CheckboxColumn(
+            "Select", 
+            help="Check this box to lock this customer into the Simulation Lab below.", 
+            default=False
+        )
+    },
     disabled=['Customer ID', 'Tenure', 'Value ($)', cfg['label'], 'AI Risk Score'],
     use_container_width=True,
     key=f"editor_{selected_niche}"
@@ -97,22 +96,28 @@ if not checked_rows.empty:
 target_id = st.session_state.selected_id
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
-col_h3, col_h4 = st.columns([0.9, 0.1])
-with col_h3:
-    st.markdown(f'<p class="section-label" style="margin-top: 30px;">2. Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
-with col_h4:
-    st.markdown('<div style="margin-top:30px;"></div>', unsafe_allow_html=True)
-    st.button("❓", help="Test 'What-If' scenarios. Adjust tenure, contract, or support status to see risk changes.", key="h2")
-
+st.markdown(f'<p class="section-label" style="margin-top: 30px;">2. Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
 st.markdown('<p class="how-to">Test "What-If" scenarios to lower this customer\'s specific risk score.</p>', unsafe_allow_html=True)
 
 c1, c2 = st.columns(2)
 with c1:
-    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']))
-    contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"])
+    tenure = st.number_input(
+        "Tenure (Months)", 1, 72, value=int(selected_row['tenure']),
+        help="Adjusting tenure simulates the impact of customer loyalty/time-on-book on their predicted risk profile."
+    )
+    contract = st.selectbox(
+        cfg['label'], ["Standard", "Premium", "Enterprise"],
+        help=f"Upgrade or downgrade the {cfg['label']} to see how contract stability affects churn probability."
+    )
 with c2:
-    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']))
-    has_support = st.checkbox("Simulate Priority Support?", value=(selected_row['OnlineSecurity'] == "Yes"))
+    monthly = st.number_input(
+        "Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']),
+        help="Changes in monthly billing often trigger churn. Use this to find the price sensitivity ceiling."
+    )
+    has_support = st.checkbox(
+        "Simulate Priority Support?", value=(selected_row['OnlineSecurity'] == "Yes"),
+        help="Toggling this simulates the 'Concierge Effect'—reducing risk through high-touch human intervention."
+    )
 
 # LOGIC
 risk = 35 if contract == "Standard" else 10
@@ -124,14 +129,10 @@ clv = monthly * 24
 st.markdown("---")
 if 'active_discount' not in st.session_state: st.session_state.active_discount = 0
 b1, b2, b3, b4 = st.columns(4)
-with b1:
-    if st.button("No Offer"): st.session_state.active_discount = 0
-with b2:
-    if st.button("10% Off"): st.session_state.active_discount = 10
-with b3:
-    if st.button("25% Off"): st.session_state.active_discount = 25
-with b4:
-    if st.button("50% VIP"): st.session_state.active_discount = 50
+with b1: st.button("No Offer", on_click=lambda: st.session_state.update({"active_discount": 0}), help="Calculate baseline risk with no intervention.")
+with b2: st.button("10% Off", on_click=lambda: st.session_state.update({"active_discount": 10}), help="Apply a standard retention discount.")
+with b3: st.button("25% Off", on_click=lambda: st.session_state.update({"active_discount": 25}), help="Apply an aggressive 'Save' offer.")
+with b4: st.button("50% VIP", on_click=lambda: st.session_state.update({"active_discount": 50}), help="High-risk emergency intervention for VIP accounts.")
 
 sim_discount = st.session_state.active_discount
 sim_risk = max(5, risk - (sim_discount * 0.6))
