@@ -1,146 +1,154 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 
-# 1. Advanced Page Configuration
-st.set_page_config(page_title="Genpact | Clinical Integrity", layout="wide")
+# 1. Advanced Page Config
+st.set_page_config(page_title="Genpact | Sentinel AI", layout="wide")
 
-# 2. Hardened Enterprise CSS
+# 2. Premium "Glass" UI Styling
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-    html, body, [class*="st-"] { font-family: 'Inter', sans-serif; background-color: #0F172A; color: #F8FAFC; }
+    @import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;700&display=swap');
     
-    /* Executive Card Styling */
-    .report-container {
-        background: rgba(30, 41, 59, 0.7);
+    /* Background Gradient */
+    .stApp {
+        background: radial-gradient(circle at top right, #1E293B, #0F172A);
+        color: #F8FAFC;
+        font-family: 'Public Sans', sans-serif;
+    }
+    
+    /* High-End Card Design */
+    .metric-card {
+        background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 24px;
-        margin-bottom: 20px;
+        border-radius: 20px;
+        padding: 25px;
         backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        margin-bottom: 15px;
     }
     
-    /* Metrics Visibility */
-    div[data-testid="stMetric"] {
-        background: rgba(15, 23, 42, 0.5) !important;
-        border: 1px solid rgba(99, 102, 241, 0.3) !important;
-        border-radius: 12px !important;
-        padding: 15px !important;
-    }
+    /* Fix Visibility of Standard Elements */
+    div[data-testid="stMetric"] { background: transparent !important; border: none !important; }
+    [data-testid="stMetricValue"] { color: #818CF8 !important; font-size: 2rem !important; }
     
-    /* Professional Tabs */
-    .stTabs [data-baseweb="tab-list"] { gap: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .stTabs [data-baseweb="tab"] { color: #94A3B8; font-weight: 600; padding: 12px 0px; }
-    .stTabs [aria-selected="true"] { color: #6366F1 !important; border-bottom: 2px solid #6366F1 !important; }
+    /* Custom Sidebar/Tabs */
+    .stTabs [data-baseweb="tab-list"] { gap: 20px; }
+    .stTabs [data-baseweb="tab"] {
+        height: 45px;
+        background-color: transparent !important;
+        border: none !important;
+        color: #94A3B8 !important;
+        font-weight: 700 !important;
+    }
+    .stTabs [aria-selected="true"] { color: #6366F1 !important; border-bottom: 3px solid #6366F1 !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- BRANDING HEADER ---
-st.markdown("""
-    <div style='border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 30px;'>
-        <h1 style='margin:0; font-weight:700; color:#6366F1;'>GENPACT <span style='color:white; font-weight:300;'>| Clinical Integrity Platform</span></h1>
-        <p style='margin:0; color:#94A3B8; font-size:14px;'>Advanced Patient Retention & Revenue Protection Engine v2.4</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# --- LOGIC: DATA ENGINE ---
-def get_data():
+# --- DATA ENGINE ---
+@st.cache_data
+def load_hospital_data():
     return pd.DataFrame({
-        'Provider': ['Adria Dental Group', 'Metropolis Medical', 'St. Jude Specialty', 'Elite Ortho-Care', 'City General'],
-        'Revenue_Risk': [45000, 12500, 88000, 52000, 15000],
-        'Wait_Time_Score': [85, 20, 95, 40, 30], # 0-100 (Lower is better)
-        'Billing_Accuracy': [92, 99, 84, 98, 95],
-        'Patient_Volume': [1200, 800, 2400, 1100, 900],
-        'Region': ['North', 'East', 'North', 'West', 'South']
+        'Clinic': ['Adria Dental', 'Metropolis Med', 'St. Jude Specialty', 'Elite Ortho', 'City General'],
+        'Risk_Score': [82, 14, 91, 44, 28],
+        'Revenue_at_Stake': [125000, 45000, 210000, 95000, 32000],
+        'Wait_Time_Min': [55, 12, 88, 32, 22],
+        'Staff_Ratio': [0.4, 0.9, 0.3, 0.7, 0.8], # Percentage of staff availability
+        'Billing_Leakage': [12, 2, 18, 5, 4] # % of revenue lost to errors
     })
 
-df = get_data()
+df = load_hospital_data()
 
-# --- TABS ---
-tab_exec, tab_audit, tab_lab = st.tabs(["📊 EXECUTIVE SUMMARY", "🔍 PATIENT FLOW AUDIT", "🧪 STRATEGIC SIMULATOR"])
-
-# --- TAB 1: EXECUTIVE SUMMARY ---
-with tab_exec:
-    st.markdown("### 📈 Network Performance Overview")
-    st.write("This dashboard monitors hospital performance to prevent 'Patient Churn'—when patients leave for a competitor.")
-    
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Revenue at Risk", "$209,500", "-5.2%", help="Projected loss if retention issues are not addressed.")
-    m2.metric("Avg Wait Time", "34m", "+4m", delta_color="inverse")
-    m3.metric("Billing Integrity", "93.4%", "Stable")
-    m4.metric("Retention Rate", "88.2%", "+1.4%")
-
-    st.markdown("---")
-    
-    col_left, col_right = st.columns([2, 1])
-    with col_left:
-        st.markdown("#### Revenue Risk by Clinical Provider")
-        fig = px.bar(df, x='Provider', y='Revenue_Risk', color='Revenue_Risk',
-                     color_continuous_scale='RdYlGn_r', template='plotly_dark')
-        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-        st.plotly_chart(fig, use_container_width=True)
-    
-    with col_right:
-        st.markdown("#### Risk Distribution")
-        fig_pie = px.pie(df, values='Patient_Volume', names='Region', hole=.5,
-                         color_discrete_sequence=px.colors.sequential.Indigo)
-        fig_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)', showlegend=False)
-        st.plotly_chart(fig_pie, use_container_width=True)
-
-# --- TAB 2: AUDIT TOOL ---
-with tab_audit:
-    st.markdown("### 🔍 Individual Clinic Audit")
-    provider = st.selectbox("Select a Hospital or Clinic to Inspect", df['Provider'])
-    details = df[df['Provider'] == provider].iloc[0]
-    
-    st.markdown(f"""
-    <div class='report-container'>
-        <h2 style='margin:0;'>{provider} Audit Report</h2>
-        <p style='color:#94A3B8;'>Operational Status: <b>Active Monitoring</b></p>
-        <div style='display:flex; gap:40px; margin-top:20px;'>
-            <div><small>MONTHLY REVENUE</small><br><b style='font-size:20px;'>${details['Revenue_Risk']*2:,}</b></div>
-            <div><small>PATIENT VOLUME</small><br><b style='font-size:20px;'>{details['Patient_Volume']}</b></div>
-            <div><small>BILLING SCORE</small><br><b style='font-size:20px;'>{details['Billing_Accuracy']}%</b></div>
-        </div>
+# --- HEADER ---
+st.markdown("""
+    <div style='padding: 20px 0px;'>
+        <h1 style='color: white; margin-bottom: 0px;'>GENPACT <span style='color: #6366F1;'>SENTINEL</span></h1>
+        <p style='color: #94A3B8; font-size: 16px; margin-top: 5px;'>Predictive Revenue Integrity & Patient Retention Engine</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Complex Analysis Text
-    st.markdown("#### 🚩 AI Risk Assessment")
-    risk_score = (details['Wait_Time_Score'] * 0.6) + ((100 - details['Billing_Accuracy']) * 0.4)
-    
-    if risk_score > 60:
-        st.error(f"CRITICAL RISK ({risk_score:.1f}%): High wait times are causing patients to abandon this provider. Immediate intervention required.")
-    else:
-        st.success(f"STABLE ({risk_score:.1f}%): Patient satisfaction is high. Billing processes are meeting Genpact standards.")
+# --- NAVIGATION ---
+tab1, tab2, tab3 = st.tabs(["🏛️ NETWORK OVERVIEW", "🔍 CLINICAL DEEP-DIVE", "📈 ROI SIMULATOR"])
 
-# --- TAB 3: STRATEGY LAB ---
-with tab_lab:
-    st.markdown("### 🧪 Transformation ROI Simulator")
-    st.write("Use this tool to show a hospital CEO how much money they save by using **Genpact's AI services.**")
+# --- TAB 1: EXECUTIVE VIEW ---
+with tab1:
+    st.markdown("### Portfolio Key Performance Indicators")
+    c1, c2, c3, c4 = st.columns(4)
     
-    c1, c2 = st.columns(2)
     with c1:
-        st.markdown("#### 1. Current Operations")
-        wait_time = st.slider("Average Wait Time (Minutes)", 10, 120, 45)
-        billing_fix = st.checkbox("Apply Automated Billing Correction")
-    
+        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+        st.metric("Retention Rate", "91.4%", "+2.3%")
+        st.markdown('</div>', unsafe_allow_html=True)
     with c2:
-        st.markdown("#### 2. Financial Impact")
-        # Simulator Logic
-        improvement = 0
-        if wait_time < 30: improvement += 15
-        if billing_fix: improvement += 10
-        
-        savings = (209500 * (improvement / 100))
+        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+        st.metric("Revenue Leakage", "$507K", "-12%", delta_color="inverse")
+        st.markdown('</div>', unsafe_allow_html=True)
+    with c3:
+        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+        st.metric("Avg Wait Score", "38m", "+4m", delta_color="inverse")
+        st.markdown('</div>', unsafe_allow_html=True)
+    with c4:
+        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
+        st.metric("Operational Health", "88%", "Stable")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown("#### Patient Retention Risk by Facility")
+    fig = px.bar(df, x='Clinic', y='Risk_Score', color='Risk_Score',
+                 color_continuous_scale='Purples', template='plotly_dark')
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=400)
+    st.plotly_chart(fig, use_container_width=True)
+
+# --- TAB 2: AUDIT VIEW ---
+with tab_audit := tab2:
+    st.markdown("### Facility Integrity Audit")
+    selected_clinic = st.selectbox("Select Clinic for Analysis", df['Clinic'])
+    row = df[df['Clinic'] == selected_clinic].iloc[0]
+    
+    col_a, col_b = st.columns([1, 1])
+    
+    with col_a:
         st.markdown(f"""
-        <div style='background:rgba(99, 102, 241, 0.1); border: 2px solid #6366F1; border-radius:15px; padding:30px; text-align:center;'>
-            <h1 style='margin:0; color:#6366F1;'>{improvement}%</h1>
-            <p style='margin:0;'>Projected Retention Improvement</p>
-            <hr style='border:0.5px solid rgba(255,255,255,0.1);'>
-            <h2 style='margin:0;'>${savings:,.0f}</h2>
-            <p style='margin:0; opacity:0.6;'>Annual Revenue Recovered</p>
+        <div class="metric-card">
+            <h2 style='margin-top:0; color:#818CF8;'>{selected_clinic}</h2>
+            <p style='color:#94A3B8;'>Patient Attrition Risk: <b style='color:white;'>{row['Risk_Score']}%</b></p>
+            <p style='color:#94A3B8;'>Revenue at Stake: <b style='color:white;'>${row['Revenue_at_Stake']:,}</b></p>
+            <hr style='opacity:0.1'>
+            <p style='font-size:14px;'><b>Genpact Analysis:</b> This facility shows a high correlation between wait times ({row['Wait_Time_Min']}m) 
+            and patient exit intent. Staffing levels are currently at {row['Staff_Ratio']*100}% of optimal capacity.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_b:
+        st.markdown("#### Operational Vulnerabilities")
+        # Fixed the error here by using a more stable color scale
+        radar_data = pd.DataFrame(dict(
+            r=[row['Wait_Time_Min'], (1-row['Staff_Ratio'])*100, row['Billing_Leakage']*5],
+            theta=['Wait Time', 'Understaffing', 'Billing Errors']))
+        fig_radar = px.line_polar(radar_data, r='r', theta='theta', line_close=True, template='plotly_dark')
+        fig_radar.update_traces(fill='toself', line_color='#6366F1')
+        fig_radar.update_layout(paper_bgcolor='rgba(0,0,0,0)', polar=dict(bgcolor='rgba(0,0,0,0)'))
+        st.plotly_chart(fig_radar, use_container_width=True)
+
+# --- TAB 3: SIMULATOR ---
+with tab3:
+    st.markdown("### Transformation ROI Lab")
+    st.write("Calculate the fiscal impact of Genpact's AI-driven billing and scheduling automation.")
+    
+    sl1, sl2 = st.columns(2)
+    with sl1:
+        auto_level = st.select_slider("Automation Implementation", options=["Manual", "Hybrid", "Genpact AI-Elite"])
+        reduction = st.slider("Target Wait Time Reduction (%)", 0, 100, 25)
+    
+    with sl2:
+        # Business Logic
+        recovery_base = 507000 # Total Leakage
+        multiplier = 0.8 if auto_level == "Genpact AI-Elite" else 0.3
+        total_recovery = (recovery_base * multiplier) + (reduction * 1000)
+        
+        st.markdown(f"""
+        <div style='background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); padding:40px; border-radius:20px; text-align:center;'>
+            <p style='margin:0; text-transform:uppercase; font-size:12px; letter-spacing:2px;'>Projected Annual Recovery</p>
+            <h1 style='margin:0; font-size:48px;'>${total_recovery:,.0f}</h1>
+            <p style='margin-bottom:0; opacity:0.8;'>Based on {auto_level} Workflows</p>
         </div>
         """, unsafe_allow_html=True)
