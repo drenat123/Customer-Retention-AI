@@ -5,7 +5,7 @@ import numpy as np
 # 1. Page Config
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
-# 2. THE ULTIMATE CSS ENGINE (PRESERVED)
+# 2. THE ULTIMATE CSS ENGINE (LOCKED)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -20,8 +20,6 @@ st.markdown("""
     .section-label { color: #00F0FF; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
     .metric-container { text-align: center; }
     .how-to { color: #484F58; font-size: 12px; margin-top: -10px; margin-bottom: 15px; font-style: italic; }
-    /* Fix for native tooltip icon alignment */
-    .stTooltipIcon { color: #00F0FF !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -31,7 +29,7 @@ st.markdown("<h1 style='color: white; margin-top: -60px; font-size: 32px;'>🛡�
 selected_niche = st.selectbox(
     "📂 Select Industry Database", 
     ["Telecommunications", "Healthcare", "SaaS", "Banking"], 
-    help="Switching the database re-calibrates the AI model for industry-specific churn patterns (e.g., Banking risk vs SaaS churn)."
+    help="Switching the database re-calibrates the AI model for industry-specific churn patterns."
 )
 
 niche_configs = {
@@ -72,13 +70,7 @@ display_df.columns = ['Select', 'Customer ID', 'Tenure', 'Value ($)', cfg['label
 edited_df = st.data_editor(
     display_df,
     hide_index=True,
-    column_config={
-        "Select": st.column_config.CheckboxColumn(
-            "Select", 
-            help="Check this box to lock this customer into the Simulation Lab below.", 
-            default=False
-        )
-    },
+    column_config={"Select": st.column_config.CheckboxColumn("Select", help="Load this specific user into the simulation lab.", default=False)},
     disabled=['Customer ID', 'Tenure', 'Value ($)', cfg['label'], 'AI Risk Score'],
     use_container_width=True,
     key=f"editor_{selected_niche}"
@@ -101,23 +93,11 @@ st.markdown('<p class="how-to">Test "What-If" scenarios to lower this customer\'
 
 c1, c2 = st.columns(2)
 with c1:
-    tenure = st.number_input(
-        "Tenure (Months)", 1, 72, value=int(selected_row['tenure']),
-        help="Adjusting tenure simulates the impact of customer loyalty/time-on-book on their predicted risk profile."
-    )
-    contract = st.selectbox(
-        cfg['label'], ["Standard", "Premium", "Enterprise"],
-        help=f"Upgrade or downgrade the {cfg['label']} to see how contract stability affects churn probability."
-    )
+    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']), help="Customer's duration with the company.")
+    contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"], help="Current tier or contract length.")
 with c2:
-    monthly = st.number_input(
-        "Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']),
-        help="Changes in monthly billing often trigger churn. Use this to find the price sensitivity ceiling."
-    )
-    has_support = st.checkbox(
-        "Simulate Priority Support?", value=(selected_row['OnlineSecurity'] == "Yes"),
-        help="Toggling this simulates the 'Concierge Effect'—reducing risk through high-touch human intervention."
-    )
+    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="Recurring monthly revenue from this user.")
+    has_support = st.checkbox("Simulate Priority Support?", value=(selected_row['OnlineSecurity'] == "Yes"), help="Impact of concierge/priority service on retention.")
 
 # LOGIC
 risk = 35 if contract == "Standard" else 10
@@ -129,36 +109,50 @@ clv = monthly * 24
 st.markdown("---")
 if 'active_discount' not in st.session_state: st.session_state.active_discount = 0
 b1, b2, b3, b4 = st.columns(4)
-with b1: st.button("No Offer", on_click=lambda: st.session_state.update({"active_discount": 0}), help="Calculate baseline risk with no intervention.")
-with b2: st.button("10% Off", on_click=lambda: st.session_state.update({"active_discount": 10}), help="Apply a standard retention discount.")
-with b3: st.button("25% Off", on_click=lambda: st.session_state.update({"active_discount": 25}), help="Apply an aggressive 'Save' offer.")
-with b4: st.button("50% VIP", on_click=lambda: st.session_state.update({"active_discount": 50}), help="High-risk emergency intervention for VIP accounts.")
+with b1: st.button("No Offer", on_click=lambda: st.session_state.update({"active_discount": 0}), help="Baseline risk without financial incentive.")
+with b2: st.button("10% Off", on_click=lambda: st.session_state.update({"active_discount": 10}), help="Standard retention discount offer.")
+with b3: st.button("25% Off", on_click=lambda: st.session_state.update({"active_discount": 25}), help="Aggressive 'Save' offer for high-value users.")
+with b4: st.button("50% VIP", on_click=lambda: st.session_state.update({"active_discount": 50}), help="Maximum emergency retention intervention.")
 
 sim_discount = st.session_state.active_discount
 sim_risk = max(5, risk - (sim_discount * 0.6))
 savings = ((risk/100) * clv) - ((sim_risk/100) * ((monthly * (1 - sim_discount/100)) * 24))
 
-st.markdown(f"""
-    <div style="background: transparent; border-top: 1px solid #30363D; border-bottom: 1px solid #30363D; padding: 25px 0px; display: flex; justify-content: space-around; align-items: center; margin: 20px 0;">
-        <div class="metric-container"><p style="color: #94A3B8; font-size: 12px; margin:0;">Simulated Risk</p><h2 style="color: #00F0FF; margin:0;">{sim_risk:.1f}%</h2></div>
-        <div class="metric-container"><p style="color: #94A3B8; font-size: 12px; margin:0;">Revenue Safeguarded</p><h2 style="color: #00FFAB; margin:0;">+${savings:,.2f}</h2></div>
-    </div>
-""", unsafe_allow_html=True)
+# METRICS WITH TOOLTIPS
+m_col1, m_col2 = st.columns(2)
+with m_col1: 
+    st.markdown(f'<div class="metric-container"><p style="color: #94A3B8; font-size: 12px; margin:0;">Simulated Risk</p><h2 style="color: #00F0FF; margin:0;">{sim_risk:.1f}%</h2></div>', unsafe_allow_html=True)
+    st.button("Info", key="sim_risk_help", help="The new churn probability based on selected simulations.")
+with m_col2:
+    st.markdown(f'<div class="metric-container"><p style="color: #94A3B8; font-size: 12px; margin:0;">Revenue Safeguarded</p><h2 style="color: #00FFAB; margin:0;">+${savings:,.2f}</h2></div>', unsafe_allow_html=True)
+    st.button("Info", key="rev_save_help", help="Estimated dollar amount protected by reducing risk.")
 
 # 9. XAI & BUSINESS IMPACT
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 st.markdown('<p class="how-to">Visualizes the top factors driving this customer\'s risk score.</p>', unsafe_allow_html=True)
+
 xai_c1, xai_c2 = st.columns(2)
-with xai_c1: st.markdown(f"<p style='color: #94A3B8; font-size: 14px;'>{cfg['label']} Impact: <span style='color: white;'>{'🔴 High' if contract == 'Standard' else '🟢 Low'}</span></p>", unsafe_allow_html=True)
-with xai_c2: st.markdown(f"<p style='color: #94A3B8; font-size: 14px;'>Support Impact: <span style='color: white;'>{'🔴 High' if not has_support else '🟢 Low'}</span></p>", unsafe_allow_html=True)
+with xai_c1:
+    st.markdown(f"<p style='color: #94A3B8; font-size: 14px;'>{cfg['label']} Impact: <span style='color: white;'>{'🔴 High' if contract == 'Standard' else '🟢 Low'}</span></p>", unsafe_allow_html=True)
+    st.button("View Details", key="xai_1", help="Shows how much the contract type is pushing the risk score up or down.")
+with xai_c2:
+    st.markdown(f"<p style='color: #94A3B8; font-size: 14px;'>Support Impact: <span style='color: white;'>{'🔴 High' if not has_support else '🟢 Low'}</span></p>", unsafe_allow_html=True)
+    st.button("View Details", key="xai_2", help="Shows the correlation between support tickets and churn intent.")
 
 st.markdown("---")
 st.markdown('<p class="section-label">4. Macro Business Impact Projection</p>', unsafe_allow_html=True)
 st.markdown('<p class="how-to">Projected annual savings if this model is deployed across the entire department.</p>', unsafe_allow_html=True)
+
 recovered_leakage = cfg['leakage'] * 0.22 
 bi1, bi2, bi3 = st.columns(3)
-with bi1: st.markdown(f"<div class='metric-container'><p style='color:#94A3B8; font-size:12px;'>Annual Savings</p><h2 style='color:#00FFAB; margin:0;'>+${recovered_leakage:,.0f}</h2></div>", unsafe_allow_html=True)
-with bi2: st.markdown(f"<div class='metric-container'><p style='color:#94A3B8; font-size:12px;'>Efficiency</p><h2 style='color:#00F0FF; margin:0;'>91%</h2></div>", unsafe_allow_html=True)
-with bi3: st.markdown(f"<div class='metric-container'><p style='color:#94A3B8; font-size:12px;'>Confidence</p><h2 style='color:#FFFFFF; margin:0;'>94.2%</h2></div>", unsafe_allow_html=True)
+with bi1: 
+    st.markdown(f"<div class='metric-container'><p style='color:#94A3B8; font-size:12px;'>Annual Savings</p><h2 style='color:#00FFAB; margin:0;'>+${recovered_leakage:,.0f}</h2></div>", unsafe_allow_html=True)
+    st.button("Calculation Info", key="bi_1", help="Projected total revenue recovery based on 22% model efficiency.")
+with bi2: 
+    st.markdown(f"<div class='metric-container'><p style='color:#94A3B8; font-size:12px;'>Efficiency</p><h2 style='color:#00F0FF; margin:0;'>91%</h2></div>", unsafe_allow_html=True)
+    st.button("Efficiency Info", key="bi_2", help="The accuracy of the AI in identifying genuine churn threats.")
+with bi3: 
+    st.markdown(f"<div class='metric-container'><p style='color:#94A3B8; font-size:12px;'>Confidence</p><h2 style='color:#FFFFFF; margin:0;'>94.2%</h2></div>", unsafe_allow_html=True)
+    st.button("Confidence Info", key="bi_3", help="Statistical confidence interval for the current prediction set.")
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani | Predictive Analytics & XAI Deployment</p>", unsafe_allow_html=True)
