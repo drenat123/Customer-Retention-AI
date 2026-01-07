@@ -5,7 +5,7 @@ import numpy as np
 # 1. PAGE CONFIG
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
-# 2. RESTORED CSS ENGINE: FULL COLOR & LARGE SIZING
+# 2. THE ULTIMATE CSS ENGINE (FORCING COLORS & LARGE TEXT)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -16,22 +16,32 @@ st.markdown("""
         color: #FFFFFF; 
     }
     
-    /* RE-CENTERING & ORIGINAL LARGE SIZING */
-    [data-testid="stMetricValue"] { font-size: 48px !important; font-weight: 700 !important; justify-content: center !important; }
+    /* RESTORE ORIGINAL LARGE SIZING & CENTERING */
+    [data-testid="stMetricValue"] { 
+        font-size: 48px !important; 
+        font-weight: 700 !important; 
+        justify-content: center !important; 
+    }
     [data-testid="stMetricLabel"] { justify-content: center !important; font-size: 14px !important; color: #94A3B8 !important; }
     [data-testid="stMetric"] { text-align: center; }
 
-    /* FORCING ORIGINAL NEON COLORS BACK */
-    .blue-text [data-testid="stMetricValue"] { color: #00F0FF !important; }
-    .green-text [data-testid="stMetricValue"] { color: #00FFAB !important; }
-    .gold-text [data-testid="stMetricValue"] { color: #FFD700 !important; }
+    /* FORCED COLOR ENGINE */
+    /* Blue Column: Simulated Risk & Efficiency */
+    [data-testid="column"]:nth-of-type(1) [data-testid="stMetricValue"] { color: #00F0FF !important; }
+    div[data-testid="stMetric"]:has(label:contains("Efficiency")) [data-testid="stMetricValue"] { color: #00F0FF !important; }
 
-    /* Buttons Style Restoration */
+    /* Green Column: Revenue & Annual Savings */
+    [data-testid="column"]:nth-of-type(2) [data-testid="stMetricValue"] { color: #00FFAB !important; }
+    div[data-testid="stMetric"]:has(label:contains("Annual Savings")) [data-testid="stMetricValue"] { color: #00FFAB !important; }
+
+    /* Gold Column: Confidence */
+    div[data-testid="stMetric"]:has(label:contains("Confidence")) [data-testid="stMetricValue"] { color: #FFD700 !important; }
+
+    /* Clean Buttons */
     .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; height: 45px; }
     .stButton > button:hover { border-color: #00F0FF !important; color: #00F0FF !important; }
     
     .section-label { color: #00F0FF; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; margin-top: 20px; }
-    .how-to { color: #484F58; font-size: 13px; margin-top: -5px; margin-bottom: 20px; font-style: italic; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -62,7 +72,7 @@ base_df = get_industry_data(selected_niche)
 if 'selected_id' not in st.session_state or not st.session_state.selected_id.startswith(cfg['prefix']):
     st.session_state.selected_id = base_df.iloc[0]['customerID']
 
-# 6. SECTION 1
+# 6. QUEUE
 st.markdown('<p class="section-label">1. Automated Risk Priority Queue</p>', unsafe_allow_html=True)
 display_df = base_df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'RiskScore']].copy()
 display_df.insert(0, "Select", display_df['customerID'] == st.session_state.selected_id)
@@ -105,40 +115,30 @@ with b4: st.button("50% VIP")
 savings = ((risk/100) * clv) 
 
 st.markdown("---")
-m1, m2 = st.columns(2)
-with m1:
-    st.markdown('<div class="blue-text">', unsafe_allow_html=True)
+m_col1, m_col2 = st.columns(2)
+with m_col1:
     st.metric("Simulated Risk", f"{risk:.1f}%", help="This is the AI's predicted churn probability for the current simulation scenario. A lower percentage indicates a higher chance of retention.")
-    st.markdown('</div>', unsafe_allow_html=True)
-with m2:
-    st.markdown('<div class="green-text">', unsafe_allow_html=True)
+with m_col2:
     st.metric("Revenue Safeguarded", f"+${savings:,.2f}", help="The total dollar amount of revenue that is protected from loss based on the current retention strategy and risk profile.")
-    st.markdown('</div>', unsafe_allow_html=True)
 
-# 8. SECTION 3: XAI (RESTORED IMPACT LABELS)
+# 8. SECTION 3: XAI
 st.markdown("---")
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 x1, x2 = st.columns(2)
 with x1:
-    st.metric(f"{cfg['label']} Impact", "🔴 High" if contract == "Standard" else "🟢 Low", help="Shows how much the contract type pushes risk up or down based on historical churn data for this industry.")
+    st.metric(f"{cfg['label']} Impact", "🔴 High" if contract == "Standard" else "🟢 Low", help="Shows how much the contract type pushes risk up or down.")
 with x2:
-    st.metric("Support Impact", "🔴 High" if not has_support else "🟢 Low", help="Indicates the correlation between priority support and customer retention for this specific profile.")
+    st.metric("Support Impact", "🔴 High" if not has_support else "🟢 Low", help="Indicates the correlation between priority support and customer retention.")
 
-# 9. SECTION 4: MACRO (RESTORED GOLD CONFIDENCE)
+# 9. SECTION 4: MACRO (RESTORED COLORS)
 st.markdown("---")
 st.markdown('<p class="section-label">4. Macro Business Impact Projection</p>', unsafe_allow_html=True)
 bi1, bi2, bi3 = st.columns(3)
-with bi1:
-    st.markdown('<div class="green-text">', unsafe_allow_html=True)
-    st.metric("Annual Savings", f"+${(savings * 12):,.0f}", help="Projected department-wide recovery if these retention strategies are scaled across all high-risk accounts.")
-    st.markdown('</div>', unsafe_allow_html=True)
-with bi2:
-    st.markdown('<div class="blue-text">', unsafe_allow_html=True)
-    st.metric("Efficiency", "91%", help="The historical accuracy of the AI model in predicting churn events within this specific industry database.")
-    st.markdown('</div>', unsafe_allow_html=True)
-with bi3:
-    st.markdown('<div class="gold-text">', unsafe_allow_html=True)
-    st.metric("Confidence", "94.2%", help="The statistical confidence level for the current prediction, based on data density and feature variance.")
-    st.markdown('</div>', unsafe_allow_html=True)
+with bi1: 
+    st.metric("Annual Savings", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}", help="Projected department-wide recovery.")
+with bi2: 
+    st.metric("Efficiency", "91%", help="AI accuracy.")
+with bi3: 
+    st.metric("Confidence", "94.2%", help="Statistical certainty.")
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani | Predictive Analytics & XAI Deployment</p>", unsafe_allow_html=True)
