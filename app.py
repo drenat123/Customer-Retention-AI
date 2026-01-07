@@ -5,7 +5,7 @@ import numpy as np
 # 1. PAGE CONFIG
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
-# 2. REFINED CSS (SMALLER METRICS & CUSTOM COLORS)
+# 2. THE RIGID CSS ENGINE (FORCING COLORS & SIZE)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -16,25 +16,27 @@ st.markdown("""
         color: #FFFFFF; 
     }
     
-    /* SCALE DOWN METRIC SIZE */
+    /* 1. SCALE DOWN SIZE & CENTER */
     [data-testid="stMetricValue"] { 
-        font-size: 38px !important; /* Made a little smaller as requested */
+        font-size: 32px !important; 
         font-weight: 700 !important; 
         justify-content: center !important; 
     }
-    [data-testid="stMetricLabel"] { justify-content: center !important; font-size: 14px !important; color: #94A3B8 !important; }
+    [data-testid="stMetricLabel"] { justify-content: center !important; font-size: 13px !important; color: #94A3B8 !important; }
     [data-testid="stMetric"] { text-align: center; }
 
-    /* SPECIFIC COLOR ENGINE */
-    /* Blue: Simulated Risk & Efficiency */
-    div[data-testid="column"]:nth-of-type(1) [data-testid="stMetricValue"] { color: #00F0FF !important; } 
-    /* Green: Revenue & Annual Savings */
-    div[data-testid="column"]:nth-of-type(2) [data-testid="stMetricValue"] { color: #00FFAB !important; }
-    /* Purple/Gold: Confidence */
-    div[data-testid="column"]:nth-of-type(3) [data-testid="stMetricValue"] { color: #FFD700 !important; }
+    /* 2. FORCE COLORS BY POSITION */
+    /* Column 1 (Risk, Efficiency) -> NEON BLUE */
+    [data-testid="column"]:nth-of-type(1) [data-testid="stMetricValue"] { color: #00F0FF !important; }
+    
+    /* Column 2 (Revenue, Annual Savings) -> NEON GREEN */
+    [data-testid="column"]:nth-of-type(2) [data-testid="stMetricValue"] { color: #00FFAB !important; }
+    
+    /* Column 3 (Confidence) -> GOLD */
+    [data-testid="column"]:nth-of-type(3) [data-testid="stMetricValue"] { color: #FFD700 !important; }
 
     /* Buttons */
-    .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; height: 45px; }
+    .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; height: 40px; }
     .stButton > button:hover { border-color: #00F0FF !important; color: #00F0FF !important; }
     
     .section-label { color: #00F0FF; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; margin-top: 20px; }
@@ -82,18 +84,18 @@ if not checked_rows.empty:
         st.session_state.selected_id = new_id
         st.rerun()
 
-# 7. SECTION 2: SIMULATION LAB (FULL TOOLTIPS)
+# 7. SECTION 2: SIMULATION LAB (TOOLTIPS INCLUDED)
 target_id = st.session_state.selected_id
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
 st.markdown(f'<p class="section-label">2. Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
 c1, c2 = st.columns(2)
 with c1:
-    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']), help="Adjust loyalty duration to see risk changes.")
-    contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"], help=f"Change {cfg['label']} to test retention tiers.")
+    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']), help="Adjust loyalty duration.")
+    contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"], help=f"Change {cfg['label']} tier.")
 with c2:
-    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="Simulate changes in recurring revenue.")
-    has_support = st.checkbox("Simulate Priority Support?", value=(selected_row['OnlineSecurity'] == "Yes"), help="See how dedicated support impacts churn.")
+    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="Simulate revenue changes.")
+    has_support = st.checkbox("Simulate Priority Support?", value=(selected_row['OnlineSecurity'] == "Yes"), help="Toggle priority support impact.")
 
 # LOGIC
 risk = 35 if contract == "Standard" else 10
@@ -125,21 +127,20 @@ st.markdown("---")
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 x1, x2 = st.columns(2)
 with x1:
-    st.metric(f"{cfg['label']} Impact", "🔴 High" if contract == "Standard" else "🟢 Low", help="Weight of account type.")
+    st.metric(f"{cfg['label']} Impact", "🔴 High" if contract == "Standard" else "🟢 Low", help="Contract weight.")
 with x2:
-    st.metric("Support Impact", "🔴 High" if not has_support else "🟢 Low", help="Weight of support status.")
+    st.metric("Support Impact", "🔴 High" if not has_support else "🟢 Low", help="Support weight.")
 
-# 9. SECTION 4: MACRO (DYNAMIC & COLORED)
+# 9. SECTION 4: MACRO (COLORED)
 st.markdown("---")
 st.markdown('<p class="section-label">4. Macro Business Impact Projection</p>', unsafe_allow_html=True)
 bi1, bi2, bi3 = st.columns(3)
 with bi1: 
     macro_val = savings * 12 * (cfg['scale'] / 100)
-    st.metric("Annual Savings", f"+${macro_val:,.0f}", help="Total projected recovery.")
+    st.metric("Annual Savings", f"+${macro_val:,.0f}", help="Total recovery.")
 with bi2: 
     st.metric("Efficiency", "91%", help="AI model accuracy.")
 with bi3: 
-    # Confidence is now Gold/Yellow in Column 3
     st.metric("Confidence", "94.2%", help="Statistical certainty.")
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani | Predictive Analytics & XAI Deployment</p>", unsafe_allow_html=True)
