@@ -37,7 +37,7 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. DATA & CRASH PROTECTION
+# 2. DATA & CRASH PROTECTION
 selected_niche = st.selectbox("📂 Select Industry Database", ["Telecommunications", "Healthcare", "SaaS", "Banking"])
 n_cfg = {
     "Telecommunications": {"scale": 7043, "label": "Contract Type", "prefix": "TELCO"},
@@ -58,19 +58,19 @@ def get_industry_data(niche_prefix):
 
 base_df = get_industry_data(cfg['prefix'])
 
-# FIX: Ensure state resets correctly when industry changes
+# Reset state when industry changes to avoid loading hangs
 if 'selected_id' not in st.session_state or not st.session_state.selected_id.startswith(cfg['prefix']):
     st.session_state.selected_id = base_df.iloc[0]['customerID']
 if 'active_discount' not in st.session_state:
     st.session_state.active_discount = 0
 
-# 4. SECTION 1: QUEUE
+# 3. SECTION 1: QUEUE
 st.markdown('<p class="section-label">1. Automated Risk Priority Queue</p>', unsafe_allow_html=True)
 display_df = base_df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'RiskScore']].copy()
 display_df.insert(0, "Select", display_df['customerID'] == st.session_state.selected_id)
 display_df.columns = ['Select', 'Customer ID', 'Tenure', 'Value ($)', cfg['label'], 'AI Risk Score']
 
-# FIX: unique 'key' per industry prevents the loading hang
+# Unique 'key' per industry prevents the loading hang
 edited_df = st.data_editor(display_df, hide_index=True, use_container_width=True, key=f"editor_{selected_niche}")
 
 checked_rows = edited_df[edited_df['Select'] == True]
@@ -80,13 +80,13 @@ if not checked_rows.empty:
         st.session_state.selected_id = new_id
         st.rerun()
 
-# 5. SECTION 2: SIMULATION LAB
+# 4. SECTION 2: SIMULATION LAB
 selected_row = base_df[base_df['customerID'] == st.session_state.selected_id].iloc[0]
 st.markdown(f'<p class="section-label">2. Simulation Lab: {st.session_state.selected_id}</p>', unsafe_allow_html=True)
 
 c1, c2 = st.columns(2)
 with c1:
-    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']))
+    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']), help="Adjust loyalty duration.")
     contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"])
 with c2:
     monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']))
@@ -99,14 +99,14 @@ with b2: st.button("10% Off", on_click=lambda: st.session_state.update({"active_
 with b3: st.button("25% Off", on_click=lambda: st.session_state.update({"active_discount": 25}))
 with b4: st.button("50% VIP", on_click=lambda: st.session_state.update({"active_discount": 50}))
 
-# Logic
+# Simulation Math
 base_risk = 35 if contract == "Standard" else 10
 if not has_support: base_risk += 15
 base_risk = max(5, min(95, base_risk - (tenure * 0.3)))
 sim_risk = max(5, base_risk - (st.session_state.active_discount * 0.6))
 savings = ((base_risk/100) * (monthly * 24)) - ((sim_risk/100) * ((monthly * (1 - st.session_state.active_discount/100)) * 24))
 
-# 6. RESULTS (EMOJIS + COLORS)
+# 5. RESULTS (EMOJIS + COLORS + TOOLTIPS)
 st.markdown("---")
 m1, m2 = st.columns(2)
 with m1: st.metric("🔵 Simulated Risk", f"{sim_risk:.1f}%", help="AI predicted churn probability.")
