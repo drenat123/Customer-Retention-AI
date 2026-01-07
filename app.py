@@ -3,30 +3,81 @@ import streamlit as st
 # 1. Page Config (PRESERVED)
 st.set_page_config(page_title="AI Retention Hub", layout="wide")
 
-# 2. THE STABLE UI ENGINE (PRESERVED & LOCKED)
+# 2. THE STABLE UI ENGINE (PRESERVED & FIXED)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
+    
+    /* Global Reset */
     header, [data-testid="stHeader"], [data-testid="stSidebarNav"] { display: none !important; }
     html, body, [class*="st-"] { 
         font-family: 'Plus Jakarta Sans', sans-serif; 
         background-color: #0B0E14 !important;
         color: #FFFFFF; 
     }
-    .glass-card { background: #161B22; border: 1px solid #30363D; border-radius: 12px; padding: 24px; margin-bottom: 25px; }
-    .niche-tag { background: rgba(0, 240, 255, 0.1); border: 1px solid #00F0FF; color: #00F0FF; padding: 2px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-right: 8px; }
-    .nba-card { background: linear-gradient(145deg, #161B22, #0D1117); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 16px; padding: 25px; margin-bottom: 25px; }
-    .nba-badge { background: #00F0FF; color: #0B0E14; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-    .section-label { color: #00F0FF; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
+
+    /* THE STABLE GLASS CARD STYLE */
+    .glass-card {
+        background: #161B22;
+        border: 1px solid #30363D;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 25px;
+    }
+
+    /* FIXING THE BLACK BOXES (TRANSPARENCY OVERRIDE) */
+    [data-testid="stMarkdownContainer"] h4, 
+    [data-testid="stMarkdownContainer"] p {
+        background-color: transparent !important;
+        border: none !important;
+    }
+
+    .niche-tag { 
+        background: rgba(0, 240, 255, 0.1); 
+        border: 1px solid #00F0FF; 
+        color: #00F0FF; 
+        padding: 2px 10px; 
+        border-radius: 4px; 
+        font-size: 10px; 
+        font-weight: 700; 
+        text-transform: uppercase; 
+        margin-right: 8px; 
+    }
+
+    .nba-card { 
+        background: linear-gradient(145deg, #161B22, #0D1117); 
+        border: 1px solid rgba(0, 240, 255, 0.3); 
+        border-radius: 16px; 
+        padding: 25px; 
+        margin-bottom: 25px; 
+    }
+
+    .nba-badge { 
+        background: #00F0FF; 
+        color: #0B0E14; 
+        padding: 4px 12px; 
+        border-radius: 6px; 
+        font-size: 11px; 
+        font-weight: 800; 
+        text-transform: uppercase; 
+    }
+
+    .section-label { 
+        color: #00F0FF; 
+        font-size: 13px; 
+        font-weight: 600; 
+        text-transform: uppercase; 
+        letter-spacing: 1.5px; 
+        margin-bottom: 12px; 
+    }
     
-    /* STRATEGY BUTTON STYLING */
+    /* BUTTON STYLING */
     .stButton > button {
         width: 100%;
         background-color: #1C2128 !important;
         color: #FFFFFF !important;
         border: 1px solid #30363D !important;
         border-radius: 8px !important;
-        transition: 0.2s;
     }
     .stButton > button:hover {
         border-color: #00F0FF !important;
@@ -35,9 +86,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# ---------------------------------------------------------
-# BRANDING & NICHE SWITCHER (PRESERVED)
-# ---------------------------------------------------------
+# 3. BRANDING & NICHE SWITCHER (PRESERVED)
 st.markdown("<h1 style='color: white; margin-top: -60px; font-size: 32px;'>🛡️ AI Retention Hub</h1>", unsafe_allow_html=True)
 
 selected_niche = st.selectbox("📂 Select Industry Database", ["Telecommunications", "Healthcare (Hospitals)", "SaaS & Tech", "Retail Banking"])
@@ -96,12 +145,11 @@ if not has_support: risk += 15
 risk = max(5, min(95, risk - (tenure * 0.3)))
 
 # ---------------------------------------------------------
-# NEW IMPLEMENTATION: BUTTON-BASED STRATEGY SANDBOX
+# STRATEGY SANDBOX (FIXED VISUALS)
 # ---------------------------------------------------------
 st.markdown("---")
 st.markdown('<p class="section-label" style="color: #FFFFFF; font-size: 11px;">🛠️ TEST RETENTION INCENTIVES</p>', unsafe_allow_html=True)
 
-# Track current discount in session state
 if 'active_discount' not in st.session_state:
     st.session_state.active_discount = 0
 
@@ -122,11 +170,21 @@ original_rev = (risk/100) * (monthly * 24)
 sim_rev = (sim_risk/100) * ((monthly * (1 - sim_discount/100)) * 24)
 savings = original_rev - sim_rev
 
+# THE CLEAN BOX (NO BLACK BOXES)
 st.markdown(f"""
-    <div style="background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 12px; padding: 15px; display: flex; justify-content: space-around;">
-        <div style="text-align: center;"><p style="color: #94A3B8; font-size: 12px; margin:0;">Applied Offer</p><h4 style="color: #FFFFFF; margin:0;">{sim_discount}% Discount</h4></div>
-        <div style="text-align: center;"><p style="color: #94A3B8; font-size: 12px; margin:0;">Target Risk</p><h4 style="color: #00F0FF; margin:0;">{sim_risk:.1f}%</h4></div>
-        <div style="text-align: center;"><p style="color: #94A3B8; font-size: 12px; margin:0;">Net Revenue Save</p><h4 style="color: #00FFAB; margin:0;">+${savings:,.2f}</h4></div>
+    <div style="background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 12px; padding: 20px; display: flex; justify-content: space-around; align-items: center;">
+        <div style="text-align: center; background: transparent;">
+            <p style="color: #94A3B8; font-size: 12px; margin:0; background: transparent;">Applied Offer</p>
+            <h2 style="color: #FFFFFF; margin:0; font-weight: 600; background: transparent;">{sim_discount}%</h2>
+        </div>
+        <div style="text-align: center; background: transparent;">
+            <p style="color: #94A3B8; font-size: 12px; margin:0; background: transparent;">Target Risk</p>
+            <h2 style="color: #00F0FF; margin:0; font-weight: 600; background: transparent;">{sim_risk:.1f}%</h2>
+        </div>
+        <div style="text-align: center; background: transparent;">
+            <p style="color: #94A3B8; font-size: 12px; margin:0; background: transparent;">Net Revenue Save</p>
+            <h2 style="color: #00FFAB; margin:0; font-weight: 600; background: transparent;">+${savings:,.2f}</h2>
+        </div>
     </div>
 """, unsafe_allow_html=True)
 
@@ -136,11 +194,10 @@ st.markdown(f"""
 st.markdown("---")
 st.markdown(f"""
     <div class="nba-card">
-        <div class="nba-header">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
             <span class="nba-badge">Action Plan</span>
-            <p style="color:white; font-size:18px; font-weight:600; margin:0;">Dynamic Strategy</p>
         </div>
-        <div class="nba-body">With a {sim_discount}% discount applied, the risk drops to {sim_risk:.1f}%. This action projects a recovery of <b>${savings:,.2f}</b> over 24 months.</div>
+        <div class="nba-body">With a {sim_discount}% discount, the risk drops to {sim_risk:.1f}%. Recovering <b>${savings:,.2f}</b> in long-term revenue.</div>
     </div>
 """, unsafe_allow_html=True)
 
