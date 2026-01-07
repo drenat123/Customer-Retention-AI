@@ -1,9 +1,9 @@
 import streamlit as st
 
-# 1. Page Config
+# 1. Page Config (PRESERVED)
 st.set_page_config(page_title="AI Retention Hub", layout="wide")
 
-# 2. THE ULTIMATE CSS ENGINE (CLEAN & TRANSPARENT)
+# 2. THE ULTIMATE CSS ENGINE (LOCKED - FIXES BLACK BOXES & BUTTONS)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -18,7 +18,7 @@ st.markdown("""
     /* THE STABLE GLASS CARD */
     .glass-card { background: #161B22; border: 1px solid #30363D; border-radius: 12px; padding: 24px; margin-bottom: 25px; }
 
-    /* NUCLEAR FIX FOR BLACK/BLUE BOXES & TRANSPARENCY */
+    /* NUCLEAR FIX FOR BLACK/BLUE BOXES */
     div[data-testid="stMarkdownContainer"], 
     div[data-testid="stVerticalBlock"], 
     div[data-testid="stHorizontalBlock"] {
@@ -27,12 +27,12 @@ st.markdown("""
         border: none !important;
     }
 
-    /* BUTTONS: REMOVING GREY/BLUE BACKGROUNDS & BORDERS */
+    /* BUTTONS: REMOVING GREY/BLUE BACKGROUNDS */
     .stButton > button {
         width: 100%;
-        background-color: transparent !important; /* Makes background transparent */
+        background-color: transparent !important;
         color: #FFFFFF !important;
-        border: 1px solid #30363D !important; /* Thin subtle border */
+        border: 1px solid #30363D !important;
         border-radius: 8px !important;
         box-shadow: none !important;
     }
@@ -42,13 +42,9 @@ st.markdown("""
         color: #00F0FF !important;
     }
 
-    /* CUSTOM METRIC STYLE (NO BACKGROUND) */
-    .metric-container {
-        text-align: center;
-        background: transparent !important;
-    }
+    .metric-container { text-align: center; background: transparent !important; }
 
-    /* PREVIOUS STYLES PRESERVED */
+    /* TAGS & LABELS */
     .niche-tag { background: rgba(0, 240, 255, 0.1); border: 1px solid #00F0FF; color: #00F0FF; padding: 2px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-right: 8px; }
     .nba-card { background: linear-gradient(145deg, #161B22, #0D1117); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 16px; padding: 25px; margin-bottom: 25px; }
     .nba-badge { background: #00F0FF; color: #0B0E14; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
@@ -57,7 +53,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. HEADER & BRANDING (RESTORED)
+# 3. BRANDING & NICHE SWITCHER (LOCKED)
 st.markdown("<h1 style='color: white; margin-top: -60px; font-size: 32px;'>🛡️ AI Retention Hub</h1>", unsafe_allow_html=True)
 
 selected_niche = st.selectbox("📂 Select Industry Database", ["Telecommunications", "Healthcare (Hospitals)", "SaaS & Tech", "Retail Banking"])
@@ -89,14 +85,14 @@ st.markdown(f"""
 
 st.markdown("<p style='color: #484F58; font-size: 12px; margin-bottom: 30px;'>Engineered by <b>Drenat Nallbani</b></p>", unsafe_allow_html=True)
 
-# 1. EXECUTIVE SUMMARY
+# 4. EXECUTIVE SUMMARY (LOCKED)
 st.markdown('<p class="section-label">1. Executive Summary</p>', unsafe_allow_html=True)
 m1, m2, m3 = st.columns(3)
 m1.metric("Database Scale", cfg['scale'], "Profiles")
 m2.metric("Portfolio Churn", "26.5%", "Avg")
 m3.metric("Projected Leakage", cfg['leakage'], "Risk")
 
-# 2. INFERENCE LAB
+# 5. INFERENCE LAB (LOCKED)
 st.markdown('<p class="section-label" style="margin-top: 30px;">2. Inference Lab</p>', unsafe_allow_html=True)
 c1, c2 = st.columns(2)
 with c1:
@@ -106,19 +102,19 @@ with c2:
     monthly = st.number_input("Monthly Value ($)", 18, 500, 80)
     has_support = st.checkbox("Priority Support / Concierge?", value=True)
 
-# CORE LOGIC
+# LOGIC
 risk = 35 if contract == "Standard" else 10
 if not has_support: risk += 15
 risk = max(5, min(95, risk - (tenure * 0.3)))
 clv = monthly * 24
 
-# LTV SECTION (NO BACKGROUNDS)
+# 6. LTV METRICS (LOCKED)
 st.markdown("---")
 l1, l2 = st.columns(2)
 l1.metric("Individual LTV (24mo)", f"${clv:,.0f}")
 l2.metric("Revenue at Risk", f"${(risk/100)*clv:,.2f}", f"{risk:.1f}% Risk")
 
-# 3. STRATEGY SANDBOX (TRANSPARENT BUTTONS & AREA)
+# 7. STRATEGY SANDBOX (LOCKED)
 st.markdown("---")
 st.markdown('<p class="section-label" style="color: #FFFFFF; font-size: 11px;">🛠️ TEST RETENTION INCENTIVES</p>', unsafe_allow_html=True)
 
@@ -140,7 +136,6 @@ original_rev = (risk/100) * clv
 sim_rev = (sim_risk/100) * ((monthly * (1 - sim_discount/100)) * 24)
 savings = original_rev - sim_rev
 
-# RESULTS AREA (NOW COMPLETELY TRANSPARENT)
 st.markdown(f"""
     <div style="background: transparent; border-top: 1px solid #30363D; border-bottom: 1px solid #30363D; padding: 20px 0px; display: flex; justify-content: space-around; align-items: center; margin: 20px 0;">
         <div class="metric-container">
@@ -158,16 +153,23 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# 4. XAI SECTION
+# ---------------------------------------------------------
+# NEW IMPLEMENTATION: DYNAMIC XAI SECTION
+# ---------------------------------------------------------
 st.markdown("---")
 st.markdown('<p class="section-label">Feature Contribution (XAI)</p>', unsafe_allow_html=True)
 xai_c1, xai_c2 = st.columns(2)
-with xai_c1:
-    st.markdown(f"<p style='color: #94A3B8; font-size: 14px;'>{cfg['label']} Impact: <span style='color: #FF4B4B;'>🔴 High</span></p>", unsafe_allow_html=True)
-with xai_c2:
-    st.markdown(f"<p style='color: #94A3B8; font-size: 14px;'>Support Impact: <span style='color: #00FFAB;'>🟢 Low</span></p>", unsafe_allow_html=True)
 
-# 5. STRATEGY PLAYBOOK
+# Dynamic Logic for Dots
+plan_impact = "🔴 High" if contract == "Standard" else "🟢 Low"
+support_impact = "🔴 High" if not has_support else "🟢 Low"
+
+with xai_c1:
+    st.markdown(f"<p style='color: #94A3B8; font-size: 14px;'>{cfg['label']} Impact: <span style='color: white;'>{plan_impact}</span></p>", unsafe_allow_html=True)
+with xai_c2:
+    st.markdown(f"<p style='color: #94A3B8; font-size: 14px;'>Support Impact: <span style='color: white;'>{support_impact}</span></p>", unsafe_allow_html=True)
+
+# 8. STRATEGY PLAYBOOK (LOCKED)
 rec_title = "Loyalty Upsell" if risk < 30 else "Revenue Rescue"
 rec_body = "Stable user detected. Trigger VIP Referral Program." if risk < 30 else "Volatile user. Deploy automated retention discount."
 
@@ -181,7 +183,7 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# 6. TECHNICAL AUDIT
+# 9. TECHNICAL AUDIT (LOCKED)
 st.markdown('<p class="section-label" style="margin-top: 30px;">3. Technical Audit</p>', unsafe_allow_html=True)
 t1, t2, t3 = st.columns(3)
 t1.metric("Confidence", "94.2%", "XGBoost")
