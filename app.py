@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# 1. Page Config - FIXED TYPO HERE (set_page_config)
+# 1. Page Config (FIXED & PERMANENT)
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
-# 2. THE ULTIMATE CSS ENGINE (LOCKED & PRESERVED)
+# 2. THE ULTIMATE CSS ENGINE (LOCKED)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -22,8 +22,6 @@ st.markdown("""
     .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; }
     .stButton > button:hover { border-color: #00F0FF !important; color: #00F0FF !important; }
     .niche-tag { background: rgba(0, 240, 255, 0.1); border: 1px solid #00F0FF; color: #00F0FF; padding: 2px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-right: 8px; }
-    .nba-card { background: linear-gradient(145deg, #161B22, #0D1117); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 16px; padding: 25px; margin-bottom: 25px; }
-    .nba-badge { background: #00F0FF; color: #0B0E14; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
     .section-label { color: #00F0FF; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
     .metric-container { text-align: center; }
     .how-to { color: #484F58; font-size: 12px; margin-top: -10px; margin-bottom: 15px; }
@@ -49,35 +47,40 @@ cfg = niche_configs[selected_niche]
 def get_industry_data(niche):
     url = "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv"
     df = pd.read_csv(url).head(15)
-    
-    # Prefix + Original Unique ID string
     df['customerID'] = [f"{cfg['prefix']}-{cid}" for cid in df['customerID']]
-    
     if niche == "Banking": df['MonthlyCharges'] = df['MonthlyCharges'] * 5 
     if niche == "Healthcare": df['MonthlyCharges'] = df['MonthlyCharges'] * 12
-    
     np.random.seed(len(niche)) 
     df['RiskScore'] = [f"{np.random.randint(10, 98)}%" for _ in range(len(df))]
     return df
 
 df = get_industry_data(selected_niche)
 
-# 5. RISK LEADERBOARD (FIXED LABEL: Customer ID)
+# 5. RISK LEADERBOARD (WITH CLICK-TO-SELECT)
 st.markdown('<p class="section-label" style="margin-top:20px;">1. Automated Risk Priority Queue</p>', unsafe_allow_html=True)
-st.markdown(f'<p class="how-to">Live {selected_niche} database ranked by predicted attrition risk.</p>', unsafe_allow_html=True)
+st.markdown(f'<p class="how-to">Click a row in the table below to analyze a specific {selected_niche} account.</p>', unsafe_allow_html=True)
 
 display_df = df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'RiskScore']].copy()
 display_df.columns = ['Customer ID', 'Tenure', 'Value ($)', cfg['label'], 'AI Risk Score']
 
-st.dataframe(display_df, use_container_width=True, hide_index=True)
+# Table Selection Logic
+event = st.dataframe(
+    display_df, 
+    use_container_width=True, 
+    hide_index=True, 
+    selection_mode="single_row", 
+    on_select="rerun"
+)
 
-# 6. CUSTOMER SELECTION
-target_id = st.selectbox("🎯 Select Customer ID to Load for Simulation", df['customerID'].tolist())
-selected_row = df[df['customerID'] == target_id].iloc[0]
+# 6. ROW SELECTION HANDLING
+# Default to the first row if nothing is clicked
+selected_index = event.selection.rows[0] if event.selection.rows else 0
+selected_row = df.iloc[selected_index]
+target_id = selected_row['customerID']
 
 # 7. INFERENCE LAB
-st.markdown('<p class="section-label" style="margin-top: 30px;">2. Simulation Lab: ' + target_id + '</p>', unsafe_allow_html=True)
-st.markdown('<p class="how-to">Test "What-If" scenarios to lower this customer\'s specific risk score.</p>', unsafe_allow_html=True)
+st.markdown(f'<p class="section-label" style="margin-top: 30px;">2. Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
+st.markdown('<p class="how-to">Values auto-fill from the table. Modify them to test retention strategies.</p>', unsafe_allow_html=True)
 c1, c2 = st.columns(2)
 with c1:
     tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']))
@@ -88,13 +91,13 @@ with c2:
     monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']))
     has_support = st.checkbox("Simulate Priority Support?", value=(selected_row['OnlineSecurity'] == "Yes"))
 
-# LOGIC ENGINE
+# 8. LOGIC ENGINE (PRESERVED)
 risk = 35 if contract == "Standard" else 10
 if not has_support: risk += 15
 risk = max(5, min(95, risk - (tenure * 0.3)))
 clv = monthly * 24
 
-# 8. RETENTION SANDBOX
+# 9. RETENTION SANDBOX (PRESERVED)
 st.markdown("---")
 if 'active_discount' not in st.session_state: st.session_state.active_discount = 0
 b1, b2, b3, b4 = st.columns(4)
@@ -120,7 +123,7 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# 9. XAI & BUSINESS IMPACT
+# 10. XAI & BUSINESS IMPACT (PRESERVED)
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 xai_c1, xai_c2 = st.columns(2)
 with xai_c1: st.markdown(f"<p style='color: #94A3B8; font-size: 14px;'>{cfg['label']} Impact: <span style='color: white;'>{'🔴 High' if contract == 'Standard' else '🟢 Low'}</span></p>", unsafe_allow_html=True)
