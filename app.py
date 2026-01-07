@@ -1,104 +1,146 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 
-# 1. Page Configuration
-st.set_page_config(page_title="Genpact | Patient Intelligence", layout="wide")
+# 1. Advanced Page Configuration
+st.set_page_config(page_title="Genpact | Clinical Integrity", layout="wide")
 
-# 2. Hardened CSS (Fixed Visibility)
+# 2. Hardened Enterprise CSS
 st.markdown("""
     <style>
-    /* Force high-contrast dark background */
-    .stApp { background-color: #0B0E14 !important; color: #FFFFFF !important; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+    html, body, [class*="st-"] { font-family: 'Inter', sans-serif; background-color: #0F172A; color: #F8FAFC; }
     
-    /* Executive Header Card */
-    .header-box {
-        background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
-        padding: 25px;
-        border-radius: 15px;
-        border-left: 5px solid #6366F1;
-        margin-bottom: 25px;
+    /* Executive Card Styling */
+    .report-container {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+        backdrop-filter: blur(10px);
     }
     
-    /* Metric Cards - Forcing Visibility */
+    /* Metrics Visibility */
     div[data-testid="stMetric"] {
-        background-color: #161B22 !important;
-        border: 1px solid #30363D !important;
+        background: rgba(15, 23, 42, 0.5) !important;
+        border: 1px solid rgba(99, 102, 241, 0.3) !important;
         border-radius: 12px !important;
-        padding: 20px !important;
+        padding: 15px !important;
     }
-    [data-testid="stMetricValue"] { color: #FFFFFF !important; font-weight: 700 !important; }
-    [data-testid="stMetricLabel"] { color: #94A3B8 !important; }
     
-    /* Professional Typography */
-    h1, h2, h3, p, span, li { color: #FFFFFF !important; }
-    
-    /* Tab Styling */
-    .stTabs [data-baseweb="tab-list"] { gap: 10px; }
-    .stTabs [data-baseweb="tab"] {
-        background-color: #161B22 !important;
-        color: #94A3B8 !important;
-        border-radius: 8px 8px 0 0;
-        padding: 10px 20px;
-    }
+    /* Professional Tabs */
+    .stTabs [data-baseweb="tab-list"] { gap: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .stTabs [data-baseweb="tab"] { color: #94A3B8; font-weight: 600; padding: 12px 0px; }
     .stTabs [aria-selected="true"] { color: #6366F1 !important; border-bottom: 2px solid #6366F1 !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Branded Header
+# --- BRANDING HEADER ---
 st.markdown("""
-    <div class="header-box">
-        <h1 style='margin:0; font-size: 24px;'>PATIENT RETENTION INTELLIGENCE</h1>
-        <p style='margin:0; opacity:0.7; font-size: 14px;'>GENPACT OPERATIONAL EXCELLENCE FRAMEWORK</p>
+    <div style='border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 30px;'>
+        <h1 style='margin:0; font-weight:700; color:#6366F1;'>GENPACT <span style='color:white; font-weight:300;'>| Clinical Integrity Platform</span></h1>
+        <p style='margin:0; color:#94A3B8; font-size:14px;'>Advanced Patient Retention & Revenue Protection Engine v2.4</p>
     </div>
     """, unsafe_allow_html=True)
 
-# 4. Dataset
-data = pd.DataFrame({
-    'ID': ['P-101', 'P-102', 'P-103', 'P-104'],
-    'Name': ['Adria Dental', 'Metropolis', 'St. Jude', 'Elite Ortho'],
-    'Risk': [88, 12, 45, 92],
-    'Value': [45000, 12000, 21000, 52000]
-})
+# --- LOGIC: DATA ENGINE ---
+def get_data():
+    return pd.DataFrame({
+        'Provider': ['Adria Dental Group', 'Metropolis Medical', 'St. Jude Specialty', 'Elite Ortho-Care', 'City General'],
+        'Revenue_Risk': [45000, 12500, 88000, 52000, 15000],
+        'Wait_Time_Score': [85, 20, 95, 40, 30], # 0-100 (Lower is better)
+        'Billing_Accuracy': [92, 99, 84, 98, 95],
+        'Patient_Volume': [1200, 800, 2400, 1100, 900],
+        'Region': ['North', 'East', 'North', 'West', 'South']
+    })
 
-# 5. Dashboard Tabs
-tab1, tab2, tab3 = st.tabs(["📊 Performance", "🔍 Risk Audit", "🛠️ ROI Simulator"])
+df = get_data()
 
-with tab1:
-    st.markdown("### Quarterly Network Health")
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Loyalty Index", "94.2%", "+2.1%")
-    c2.metric("Revenue at Risk", "$142,500", "Critical")
-    c3.metric("Retention Target", "96%", "In-Progress")
+# --- TABS ---
+tab_exec, tab_audit, tab_lab = st.tabs(["📊 EXECUTIVE SUMMARY", "🔍 PATIENT FLOW AUDIT", "🧪 STRATEGIC SIMULATOR"])
+
+# --- TAB 1: EXECUTIVE SUMMARY ---
+with tab_exec:
+    st.markdown("### 📈 Network Performance Overview")
+    st.write("This dashboard monitors hospital performance to prevent 'Patient Churn'—when patients leave for a competitor.")
     
-    st.markdown("---")
-    # Professional Blue/Indigo Chart
-    fig = px.bar(data, x='Name', y='Risk', color='Risk', 
-                 color_continuous_scale=['#4F46E5', '#818CF8'],
-                 labels={'Risk': 'Attrition Risk (%)'})
-    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
-                      font_color="white", margin=dict(t=20, b=0, l=0, r=0))
-    st.plotly_chart(fig, use_container_width=True)
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Revenue at Risk", "$209,500", "-5.2%", help="Projected loss if retention issues are not addressed.")
+    m2.metric("Avg Wait Time", "34m", "+4m", delta_color="inverse")
+    m3.metric("Billing Integrity", "93.4%", "Stable")
+    m4.metric("Retention Rate", "88.2%", "+1.4%")
 
-with tab2:
-    st.markdown("### Patient Record Investigation")
-    choice = st.selectbox("Search Identifier", data['Name'])
-    p_info = data[data['Name'] == choice].iloc[0]
+    st.markdown("---")
+    
+    col_left, col_right = st.columns([2, 1])
+    with col_left:
+        st.markdown("#### Revenue Risk by Clinical Provider")
+        fig = px.bar(df, x='Provider', y='Revenue_Risk', color='Revenue_Risk',
+                     color_continuous_scale='RdYlGn_r', template='plotly_dark')
+        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col_right:
+        st.markdown("#### Risk Distribution")
+        fig_pie = px.pie(df, values='Patient_Volume', names='Region', hole=.5,
+                         color_discrete_sequence=px.colors.sequential.Indigo)
+        fig_pie.update_layout(paper_bgcolor='rgba(0,0,0,0)', showlegend=False)
+        st.plotly_chart(fig_pie, use_container_width=True)
+
+# --- TAB 2: AUDIT TOOL ---
+with tab_audit:
+    st.markdown("### 🔍 Individual Clinic Audit")
+    provider = st.selectbox("Select a Hospital or Clinic to Inspect", df['Provider'])
+    details = df[df['Provider'] == provider].iloc[0]
     
     st.markdown(f"""
-        <div style='background:#161B22; padding:20px; border-radius:10px; border:1px solid #30363D;'>
-            <h2 style='margin:0; color:#6366F1 !important;'>{choice}</h2>
-            <p>Annual Contract Value: <b>${p_info['Value']:,}</b></p>
-            <p>Calculated Probability of Attrition: <b>{p_info['Risk']}%</b></p>
+    <div class='report-container'>
+        <h2 style='margin:0;'>{provider} Audit Report</h2>
+        <p style='color:#94A3B8;'>Operational Status: <b>Active Monitoring</b></p>
+        <div style='display:flex; gap:40px; margin-top:20px;'>
+            <div><small>MONTHLY REVENUE</small><br><b style='font-size:20px;'>${details['Revenue_Risk']*2:,}</b></div>
+            <div><small>PATIENT VOLUME</small><br><b style='font-size:20px;'>{details['Patient_Volume']}</b></div>
+            <div><small>BILLING SCORE</small><br><b style='font-size:20px;'>{details['Billing_Accuracy']}%</b></div>
         </div>
+    </div>
     """, unsafe_allow_html=True)
-    st.progress(p_info['Risk'] / 100)
 
-with tab3:
-    st.markdown("### Genpact Transformation Lab")
-    st.write("Simulate the impact of Genpact's AI Automation on this account.")
-    automation = st.select_slider("AI Automation Tier", options=["Standard", "Advanced", "Genpact Elite"])
+    # Complex Analysis Text
+    st.markdown("#### 🚩 AI Risk Assessment")
+    risk_score = (details['Wait_Time_Score'] * 0.6) + ((100 - details['Billing_Accuracy']) * 0.4)
     
-    impact = 25 if automation == "Genpact Elite" else 5
-    st.success(f"Strategy Result: Moving to {automation} reduces risk by {impact}%.")
-    st.write(f"Estimated Revenue Recovered: **${(142500 * (impact/100)):,.0f}**")
+    if risk_score > 60:
+        st.error(f"CRITICAL RISK ({risk_score:.1f}%): High wait times are causing patients to abandon this provider. Immediate intervention required.")
+    else:
+        st.success(f"STABLE ({risk_score:.1f}%): Patient satisfaction is high. Billing processes are meeting Genpact standards.")
+
+# --- TAB 3: STRATEGY LAB ---
+with tab_lab:
+    st.markdown("### 🧪 Transformation ROI Simulator")
+    st.write("Use this tool to show a hospital CEO how much money they save by using **Genpact's AI services.**")
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("#### 1. Current Operations")
+        wait_time = st.slider("Average Wait Time (Minutes)", 10, 120, 45)
+        billing_fix = st.checkbox("Apply Automated Billing Correction")
+    
+    with c2:
+        st.markdown("#### 2. Financial Impact")
+        # Simulator Logic
+        improvement = 0
+        if wait_time < 30: improvement += 15
+        if billing_fix: improvement += 10
+        
+        savings = (209500 * (improvement / 100))
+        st.markdown(f"""
+        <div style='background:rgba(99, 102, 241, 0.1); border: 2px solid #6366F1; border-radius:15px; padding:30px; text-align:center;'>
+            <h1 style='margin:0; color:#6366F1;'>{improvement}%</h1>
+            <p style='margin:0;'>Projected Retention Improvement</p>
+            <hr style='border:0.5px solid rgba(255,255,255,0.1);'>
+            <h2 style='margin:0;'>${savings:,.0f}</h2>
+            <p style='margin:0; opacity:0.6;'>Annual Revenue Recovered</p>
+        </div>
+        """, unsafe_allow_html=True)
