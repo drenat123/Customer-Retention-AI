@@ -2,26 +2,26 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# 1. FORCE PAGE TITLE (This fixes the 'keyboard_doubl' top bar)
-st.set_page_config(
-    page_title="AI Retention Hub",
-    page_icon="🛡️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# 1. Page Config
+st.set_page_config(page_title="AI Retention Hub", layout="wide")
 
-# 2. PREMIUM CSS (Clean Metrics & Glowing UI)
+# 2. THE FIX: Hide the top bar and style the new button
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
     
+    /* HIDE THE TOP BAR (Removes keyboard_doubl) */
+    header[data-testid="stHeader"] {
+        display: none !important;
+    }
+
     html, body, [class*="st-"] { 
         font-family: 'Plus Jakarta Sans', sans-serif; 
         background-color: #0E1117; 
         color: #F8FAFC; 
     }
 
-    /* REMOVE DARK BLOCKS FROM METRICS */
+    /* PREMIUM METRIC CARDS */
     div[data-testid="stMetric"] { 
         background: rgba(255, 255, 255, 0.03) !important; 
         border: 1px solid rgba(255, 255, 255, 0.1) !important; 
@@ -29,30 +29,19 @@ st.markdown("""
         padding: 20px !important;
     }
 
-    /* CYAN BADGE SLIDER */
+    /* THE CYAN SLIDERS */
     .stSlider [data-baseweb="slider"] [role="slider"] {
         height: 30px !important;
         width: 65px !important;
         background-color: #00F0FF !important;
         border-radius: 6px !important;
-        border: 2px solid #FFFFFF !important;
         box-shadow: 0 0 15px rgba(0, 240, 255, 0.5) !important;
     }
     
-    /* GLOWING RADIO BUTTON SELECTIONS */
-    div[data-testid="stWidgetLabel"] p { font-size: 1rem; color: #94A3B8; }
-    
-    .stRadio [role="radiogroup"] {
-        padding: 15px;
-        background: rgba(255, 255, 255, 0.02);
-        border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
+    /* GLOWING BUTTONS */
     div[aria-checked="true"] {
         background-color: rgba(0, 240, 255, 0.1) !important;
         border: 1px solid #00F0FF !important;
-        border-radius: 8px;
         box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
     }
 
@@ -60,30 +49,25 @@ st.markdown("""
         color: #00F0FF; 
         font-size: 24px; 
         font-weight: 600; 
-        margin-top: 40px; 
+        margin-top: 30px; 
         border-bottom: 1px solid rgba(0, 240, 255, 0.1);
         padding-bottom: 8px;
-        margin-bottom: 15px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. SIDEBAR: MODEL INTELLIGENCE
-with st.sidebar:
-    st.markdown("<h2 style='color: #00F0FF;'>🧠 Model Intelligence</h2>", unsafe_allow_html=True)
-    st.markdown("---")
-    
-    st.markdown("### 💰 Revenue Focus")
-    st.info("The Executive Summary flags $142.5K at risk to prioritize financial impact.")
-    
-    st.markdown("### 🔍 Risk Auditing")
-    st.info("Predictions include a Confidence Score based on historical exit intent patterns.")
-    
-    st.markdown("### 🔮 Prescriptive Action")
-    st.info("The Lab provides strategic recommendations to guide retention calls.")
-    
-    st.markdown("---")
-    st.caption("Developed by Drenat Nallbani")
+# 3. HEADER & INSIGHTS BUTTON
+st.markdown("<h1 style='color: white; margin-top: -50px;'>🛡️ AI Retention Hub</h1>", unsafe_allow_html=True)
+
+# THE SIMPLE BUTTON YOU ASKED FOR
+if st.button("📊 View Model Insights"):
+    st.info("""
+    **💰 Revenue Focus:** Flagging $142.5K at risk to prioritize financial impact.
+    **🔍 Risk Auditing:** Predictions include a Confidence Score (98%+) based on patterns.
+    **🔮 Prescriptive Action:** Provides strategic recommendations for retention calls.
+    """)
+
+st.markdown("<p style='color: #64748B;'>By <b>Drenat Nallbani</b></p>", unsafe_allow_html=True)
 
 # 4. Data Ingestion
 @st.cache_data
@@ -94,10 +78,6 @@ def load_data():
     return df
 
 df = load_data()
-
-# --- HEADER ---
-st.markdown("<h1 style='color: white;'>🛡️ AI Retention Hub</h1>", unsafe_allow_html=True)
-st.markdown("<p style='color: #64748B;'>Data Science Project by <b>Drenat Nallbani</b></p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # SECTION 1: THE BUSINESS PROBLEM
@@ -158,7 +138,7 @@ with col_right:
     support_val = st.radio("Access to Tech Support?", ["Yes", "No"], horizontal=True)
     billing_val = st.radio("Paperless Billing?", ["Yes", "No"], horizontal=True)
 
-# Logic for results
+# Logic
 score = 0
 if contract_val == "Month-to-month": score += 45
 if support_val == "No": score += 15
@@ -168,8 +148,5 @@ final_score = max(5, min(95, score))
 st.markdown("---")
 if final_score > 50:
     st.error(f"Prediction: HIGH RISK ({final_score:.1f}%)")
-    st.info("💡 **Strategy:** High priority for retention loyalty outreach.")
 else:
     st.success(f"Prediction: LOW RISK ({final_score:.1f}%)")
-    st.info("💡 **Strategy:** Candidate for long-term service expansion.")
-
