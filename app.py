@@ -6,7 +6,7 @@ import numpy as np
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 DYNAMIC COLOR LOGIC (RESTORED + REACTIVE FIX)
+# 🎨 DYNAMIC COLOR LOGIC
 # ==========================================
 st.markdown("""
     <style>
@@ -28,7 +28,7 @@ st.markdown("""
     div[data-testid="stMetric"]:has(label:contains("CRITICAL")) [data-testid="stMetricValue"] { color: #FF4D4D !important; }
     div[data-testid="stMetric"]:has(label:contains("STABLE")) [data-testid="stMetricValue"] { color: #00F0FF !important; }
 
-    /* NEW: REACTIVE COLOR LOGIC FOR HIGH/LOW VALUES */
+    /* REACTIVE COLOR LOGIC FOR HIGH/LOW VALUES */
     div[data-testid="stMetricValue"]:contains("High") { color: #00FFAB !important; }
     div[data-testid="stMetricValue"]:contains("Medium") { color: #FF9F00 !important; }
     div[data-testid="stMetricValue"]:contains("Low") { color: #FF4D4D !important; }
@@ -63,7 +63,6 @@ def get_industry_data(prefix):
 
 base_df = get_industry_data(cfg['prefix'])
 
-# CRITICAL FIX: Session State Sync
 if 'selected_id' not in st.session_state or not st.session_state.selected_id.startswith(cfg['prefix']):
     st.session_state.selected_id = base_df.iloc[0]['customerID']
 if 'active_discount' not in st.session_state:
@@ -83,7 +82,7 @@ if not checked_rows.empty:
         st.session_state.selected_id = new_id
         st.rerun()
 
-# 4. SECTION 2: SIMULATION LAB (TOOLTIPS RESTORED)
+# 4. SECTION 2: SIMULATION LAB
 target_id = st.session_state.selected_id
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
@@ -96,7 +95,6 @@ with c2:
     monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="Simulate revenue impact based on monthly spend.")
     has_support = st.checkbox("Simulate Priority Support?", value=True, help="Toggle the impact of dedicated agent support.")
 
-# Buttons
 st.markdown("<br>", unsafe_allow_html=True)
 b1, b2, b3, b4 = st.columns(4)
 with b1: st.button("No Offer", on_click=lambda: st.session_state.update({"active_discount": 0}))
@@ -104,14 +102,13 @@ with b2: st.button("10% Off", on_click=lambda: st.session_state.update({"active_
 with b3: st.button("25% Off", on_click=lambda: st.session_state.update({"active_discount": 25}))
 with b4: st.button("50% VIP", on_click=lambda: st.session_state.update({"active_discount": 50}))
 
-# Simulation Logic
 base_risk = 35 if contract == "Standard" else 10
 if not has_support: base_risk += 15
 base_risk = max(5, min(95, base_risk - (tenure * 0.3)))
 sim_risk = max(5, base_risk - (st.session_state.active_discount * 0.6))
 savings = ((base_risk/100) * (monthly * 24)) - ((sim_risk/100) * ((monthly * (1 - st.session_state.active_discount/100)) * 24))
 
-# 5. DYNAMIC RESULTS (Colors react to thresholds)
+# 5. DYNAMIC RESULTS
 st.markdown("---")
 m1, m2 = st.columns(2)
 with m1:
@@ -120,16 +117,18 @@ with m1:
 with m2:
     st.metric("🟢 REVENUE SAFEGUARDED", f"+${savings:,.2f}", help="Total dollar amount protected from loss.")
 
-# 6. SECTION 3: XAI (REACTIVE COLORS APPLIED)
+# 6. SECTION 3: XAI (RECIPIENT OF EMOJI + COLOR FIX)
 st.markdown("---")
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 x1, x2 = st.columns(2)
 with x1:
-    contract_impact = "High" if contract == "Standard" else "Low"
-    st.metric(f"{cfg['label']} IMPACT", contract_impact, help="Correlation between contract type and churn.")
+    impact_color = "🔴" if contract == "Standard" else "🟢"
+    contract_val = "High" if contract == "Standard" else "Low"
+    st.metric(f"{impact_color} {cfg['label']} IMPACT", contract_val, help="Correlation between contract type and churn.")
 with x2:
-    support_impact = "High" if not has_support else "Low"
-    st.metric(f"SUPPORT IMPACT", support_impact, help="Impact of priority support on this customer.")
+    sup_color = "🔴" if not has_support else "🟢"
+    support_val = "High" if not has_support else "Low"
+    st.metric(f"{sup_color} SUPPORT IMPACT", support_val, help="Impact of priority support on this customer.")
 
 # 7. SECTION 4: MACRO IMPACT
 st.markdown("---")
