@@ -2,77 +2,73 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# 1. PAGE CONFIG
+# 1. PAGE SETUP
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
-# ==========================================
-# 🎨 THE ONLY WAY TO FORCE COLOR (Custom HTML)
-# ==========================================
-def neon_metric(label, value, color="#00FFAB"):
-    # Convert hex to rgba for the glow
-    hex_color = color.lstrip("#")
-    r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-    glow = f"rgba({r},{g},{b},0.5)"
-    
-    # We use a unique ID for each metric to prevent CSS bleeding
-    html_code = f"""
-    <div style="
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        justify-content: center; 
-        padding: 20px;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    ">
-        <span style="
-            color: #94A3B8 !important; 
-            font-size: 13px !important; 
-            text-transform: uppercase !important; 
-            letter-spacing: 1.5px !important; 
-            margin-bottom: 8px !important;
-            font-family: 'Plus Jakarta Sans', sans-serif !important;
-        ">{label}</span>
-        <span style="
-            color: {color} !important; 
-            font-size: 52px !important; 
-            font-weight: 700 !important; 
-            text-shadow: 0 0 20px {glow} !important; 
-            font-family: 'Plus Jakarta Sans', sans-serif !important;
-            line-height: 1 !important;
-        ">{value}</span>
-    </div>
-    """
-    st.write(html_code, unsafe_allow_html=True)
-
-# 2. GLOBAL STYLES
+# 2. THE FORCE-COLOR ENGINE (The exact code that kills white text)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
     
-    [data-testid="stHeader"] { display: none !important; }
+    /* Hide Streamlit Garbage */
+    header, [data-testid="stHeader"], [data-testid="stElementToolbar"] { display: none !important; }
     
+    /* Background */
     html, body, [data-testid="stAppViewContainer"] { 
         background-color: #0B0E14 !important; 
         font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
 
-    .main-title {
+    /* THE TITLE SECTION */
+    .hero-title {
         color: #FFFFFF !important;
         font-size: 36px !important;
         font-weight: 700 !important;
-        margin-bottom: 0px !important;
         display: flex;
         align-items: center;
         gap: 15px;
+        margin-top: -20px;
     }
-    
-    .subtitle {
+    .hero-subtitle {
         color: #94A3B8 !important;
         font-size: 16px !important;
-        margin-bottom: 40px !important;
-        opacity: 0.8;
+        margin-bottom: 30px !important;
+    }
+
+    /* THE NEON NUMBERS - THE "PIERCING" SELECTOR */
+    /* This targets the deepest part of the metric to force the color */
+    [data-testid="stMetricValue"] > div {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-weight: 700 !important;
+    }
+
+    /* GREEN 🟢 */
+    div[data-testid="stMetric"]:has(label:contains("🟢")) [data-testid="stMetricValue"] > div {
+        color: #00FFAB !important;
+        text-shadow: 0 0 20px rgba(0, 255, 171, 0.8) !important;
+        -webkit-text-fill-color: #00FFAB !important;
+    }
+
+    /* BLUE 🔵 */
+    div[data-testid="stMetric"]:has(label:contains("🔵")) [data-testid="stMetricValue"] > div {
+        color: #00F0FF !important;
+        text-shadow: 0 0 20px rgba(0, 240, 255, 0.8) !important;
+        -webkit-text-fill-color: #00F0FF !important;
+    }
+
+    /* ORANGE 🟠 */
+    div[data-testid="stMetric"]:has(label:contains("🟠")) [data-testid="stMetricValue"] > div {
+        color: #FF8C00 !important;
+        text-shadow: 0 0 20px rgba(255, 140, 0, 0.8) !important;
+        -webkit-text-fill-color: #FF8C00 !important;
+    }
+
+    /* Labels */
+    [data-testid="stMetricLabel"] p {
+        color: #94A3B8 !important;
+        text-transform: uppercase !important;
+        font-size: 13px !important;
+        letter-spacing: 1.5px !important;
     }
 
     .section-label { 
@@ -80,52 +76,43 @@ st.markdown("""
         font-size: 14px !important; 
         font-weight: 600 !important; 
         text-transform: uppercase !important; 
-        letter-spacing: 2px !important;
         margin-top: 40px !important; 
-        margin-bottom: 20px !important;
         border-left: 3px solid #00F0FF !important;
         padding-left: 15px !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# ==========================================
-# 🛡️ RESTORED HEADER
-# ==========================================
-st.markdown('<div class="main-title">🛡️ AI Retention Hub</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Next-Gen Predictive Churn Intelligence</div>', unsafe_allow_html=True)
+# 3. HEADER RESTORATION
+st.markdown('<div class="hero-title">🛡️ AI Retention Hub</div>', unsafe_allow_html=True)
+st.markdown('<div class="hero-subtitle">Next-Gen Predictive Churn Intelligence</div>', unsafe_allow_html=True)
 
-# 3. DATA
-@st.cache_data
-def load_data():
-    url = "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv"
-    df = pd.read_csv(url).head(10)
-    df['Risk'] = [np.random.randint(15, 90) for _ in range(len(df))]
-    return df
+# 4. DATA 
+df = pd.DataFrame({
+    'customerID': [f'ID-{i}' for i in range(1001, 1006)],
+    'Tenure': [12, 24, 5, 48, 10],
+    'Value': [75.0, 110.5, 60.2, 150.0, 85.0],
+    'Risk': ['15%', '42%', '88%', '10%', '65%']
+})
 
-df = load_data()
+# 5. UI SECTIONS
+st.markdown('<p class="section-label">1. Priority Risk Queue</p>', unsafe_allow_html=True)
+st.dataframe(df, use_container_width=True, hide_index=True)
 
-# 4. QUEUE SECTION
-st.markdown('<p class="section-label">1. Risk Priority Queue</p>', unsafe_allow_html=True)
-st.dataframe(df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'Risk']], use_container_width=True, hide_index=True)
+st.markdown('<p class="section-label">2. Real-Time Simulation</p>', unsafe_allow_html=True)
+col1, col2 = st.columns(2)
 
-# 5. RESULTS SECTION (SIMULATION)
-st.markdown('<p class="section-label">2. Real-Time Impact Simulation</p>', unsafe_allow_html=True)
+with col1:
+    st.metric("🔵 SIMULATED RISK", "17.3%")
+with col2:
+    st.metric("🟢 REVENUE SAFEGUARDED", "+$148.42")
 
-m1, m2 = st.columns(2)
-with m1:
-    neon_metric("🔵 SIMULATED RISK", "17.3%", color="#00F0FF")
-with m2:
-    neon_metric("🟢 REVENUE SAFEGUARDED", "+$148.42", color="#00FFAB")
-
-# 6. MACRO SECTION
+st.markdown("---")
 st.markdown('<p class="section-label">3. Macro Business Impact</p>', unsafe_allow_html=True)
 bi1, bi2, bi3 = st.columns(3)
-with bi1:
-    neon_metric("🟢 ANNUAL SAVINGS", "+$37,930", color="#00FFAB")
-with bi2:
-    neon_metric("🔵 EFFICIENCY", "91%", color="#00F0FF")
-with bi3:
-    neon_metric("🟠 CONFIDENCE", "94.2%", color="#FF8C00")
+
+with bi1: st.metric("🟢 ANNUAL SAVINGS", "+$37,930")
+with bi2: st.metric("🔵 EFFICIENCY", "91%")
+with bi3: st.metric("🟠 CONFIDENCE", "94.2%")
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani</p>", unsafe_allow_html=True)
