@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# 1. Page Config (PRESERVED)
-st.set_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
+# 1. Page Config - FIXED TYPO HERE (set_page_config)
+st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
-# 2. THE ULTIMATE CSS ENGINE (LOCKED - NO CHANGES)
+# 2. THE ULTIMATE CSS ENGINE (LOCKED & PRESERVED)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -50,7 +50,7 @@ def get_industry_data(niche):
     url = "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv"
     df = pd.read_csv(url).head(15)
     
-    # Logic: Join Industry Prefix + Original Unique String from Database
+    # Prefix + Original Unique ID string
     df['customerID'] = [f"{cfg['prefix']}-{cid}" for cid in df['customerID']]
     
     if niche == "Banking": df['MonthlyCharges'] = df['MonthlyCharges'] * 5 
@@ -62,12 +62,11 @@ def get_industry_data(niche):
 
 df = get_industry_data(selected_niche)
 
-# 5. RISK LEADERBOARD
+# 5. RISK LEADERBOARD (FIXED LABEL: Customer ID)
 st.markdown('<p class="section-label" style="margin-top:20px;">1. Automated Risk Priority Queue</p>', unsafe_allow_html=True)
 st.markdown(f'<p class="how-to">Live {selected_niche} database ranked by predicted attrition risk.</p>', unsafe_allow_html=True)
 
 display_df = df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'RiskScore']].copy()
-# Fixed: "Customer ID" label as requested
 display_df.columns = ['Customer ID', 'Tenure', 'Value ($)', cfg['label'], 'AI Risk Score']
 
 st.dataframe(display_df, use_container_width=True, hide_index=True)
