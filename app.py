@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# 1. Page Config
-st.set_page_config(page_title="AI Customer Analytics", layout="wide")
+# 1. Page Config - Clean & Professional
+st.set_page_config(page_title="AI Retention Hub", layout="wide")
 
-# 2. STABLE PREMIUM CSS
+# 2. PREMIUM CSS
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -16,7 +16,7 @@ st.markdown("""
         color: #F8FAFC; 
     }
 
-    /* 1. CLEAN METRICS (No Black Boxes) */
+    /* CLEAN METRIC CARDS */
     div[data-testid="stMetric"] { 
         background: rgba(255, 255, 255, 0.03) !important; 
         border: 1px solid rgba(255, 255, 255, 0.1) !important; 
@@ -24,7 +24,7 @@ st.markdown("""
         padding: 20px !important;
     }
 
-    /* 2. THE BADGE SLIDER (Stable Cyan Badge) */
+    /* THE CYAN BADGE SLIDER */
     .stSlider [data-baseweb="slider"] [role="slider"] {
         height: 30px !important;
         width: 65px !important;
@@ -34,7 +34,7 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(0, 240, 255, 0.5) !important;
     }
     
-    /* 3. GLOWING SELECTIONS */
+    /* GLOWING PULSE BUTTONS */
     div[data-testid="stWidgetLabel"] p { font-size: 1rem; color: #94A3B8; }
     
     .stRadio [role="radiogroup"] {
@@ -64,7 +64,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# SIDEBAR: KEY INSIGHTS (NEW ADDITION)
+# SIDEBAR: KEY INSIGHTS (The "Master" Layer)
 # ---------------------------------------------------------
 with st.sidebar:
     st.markdown("<h2 style='color: #00F0FF;'>🧠 Model Intelligence</h2>", unsafe_allow_html=True)
@@ -86,9 +86,8 @@ with st.sidebar:
     
     st.markdown("### 🔮 Prescriptive Action")
     st.info("""
-    The **Inference Lab** doesn't just predict risk; 
-    it provides a strategic recommendation (e.g., Cross-selling 
-    vs. Retention Call) to guide your team's next move.
+    The **Inference Lab** (Section 4) doesn't just predict risk; 
+    it provides a strategic recommendation to guide your team's next move.
     """)
     
     st.markdown("---")
@@ -104,8 +103,8 @@ def load_data():
 
 df = load_data()
 
-# --- HEADER ---
-st.title("🛡️ AI Retention Hub")
+# --- HEADER (CLEANED) ---
+st.markdown("<h1 style='color: white;'>🛡️ AI Retention Hub</h1>", unsafe_allow_html=True)
 st.markdown("<p style='color: #64748B;'>Data Science Project by <b>Drenat Nallbani</b></p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
@@ -156,13 +155,13 @@ col_left, col_right = st.columns(2)
 
 with col_left:
     st.subheader("Loyalty Metrics")
-    tenure_val = st.slider("Customer Tenure (Months)", 1, 72, 24)
+    tenure_val = st.slider("Customer Tenure (Months)", 1, 72, 39)
     contract_val = st.selectbox("Contract Framework", ["Month-to-month", "One year", "Two year"])
-    internet_val = st.selectbox("Internet Service Type", ["Fiber optic", "DSL", "No Internet"])
+    internet_val = st.selectbox("Internet Service Type", ["DSL", "Fiber optic", "No Internet"])
 
 with col_right:
     st.subheader("Support & Billing")
-    monthly_val = st.slider("Monthly Charges ($)", 18, 120, 75)
+    monthly_val = st.slider("Monthly Charges ($)", 18, 120, 100)
     support_val = st.radio("Access to Tech Support?", ["Yes", "No"], horizontal=True)
     billing_val = st.radio("Paperless Billing?", ["Yes", "No"], horizontal=True)
 
