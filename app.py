@@ -5,7 +5,7 @@ import numpy as np
 # 1. Page Config
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
-# 2. THE ULTIMATE CSS ENGINE (FULL RESTORATION)
+# 2. THE ULTIMATE CSS ENGINE (LOCKED & RESTORED)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -17,7 +17,7 @@ st.markdown("""
     }
     .section-label { color: #00F0FF; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
     .metric-container { text-align: center; }
-    .how-to { color: #484F58; font-size: 12px; margin-top: -10px; margin-bottom: 15px; }
+    .how-to { color: #484F58; font-size: 12px; margin-top: -10px; margin-bottom: 15px; font-style: italic; }
     .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; }
     </style>
     """, unsafe_allow_html=True)
@@ -49,15 +49,16 @@ def get_industry_data(niche):
 
 base_df = get_industry_data(selected_niche)
 
-# 5. SINGLE SELECTION STATE LOGIC
-if 'selected_id' not in st.session_state:
+# 5. SINGLE SELECTION STATE FIX
+# If industry changes, reset the selected ID to the first item of the new list to prevent IndexError
+if 'last_niche' not in st.session_state or st.session_state.last_niche != selected_niche:
     st.session_state.selected_id = base_df.iloc[0]['customerID']
+    st.session_state.last_niche = selected_niche
 
-# 6. RISK LEADERBOARD (DESCRIPTIONS RESTORED)
+# 6. RISK LEADERBOARD (ALL DESCRIPTIONS RESTORED)
 st.markdown(f'<p class="section-label" style="margin-top:20px;">1. Automated Risk Priority Queue</p>', unsafe_allow_html=True)
 st.markdown(f'<p class="how-to">Live {selected_niche} database ranked by predicted attrition risk. Check one "Select" box to load a specific user into the lab.</p>', unsafe_allow_html=True)
 
-# Build the display dataframe with the single-select checkbox
 display_df = base_df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'RiskScore']].copy()
 display_df.insert(0, "Select", display_df['customerID'] == st.session_state.selected_id)
 display_df.columns = ['Select', 'Customer ID', 'Tenure', 'Value ($)', cfg['label'], 'AI Risk Score']
@@ -68,10 +69,10 @@ edited_df = st.data_editor(
     column_config={"Select": st.column_config.CheckboxColumn(required=True)},
     disabled=['Customer ID', 'Tenure', 'Value ($)', cfg['label'], 'AI Risk Score'],
     use_container_width=True,
-    key="editor"
+    key=f"editor_{selected_niche}" # Keyed to niche to force reset on switch
 )
 
-# Force single selection by finding the newly checked row
+# Force Single Selection Logic
 checked_rows = edited_df[edited_df['Select'] == True]
 if not checked_rows.empty:
     new_id = checked_rows.iloc[-1]['Customer ID']
@@ -79,7 +80,7 @@ if not checked_rows.empty:
         st.session_state.selected_id = new_id
         st.rerun()
 
-# 7. INFERENCE LAB (DESCRIPTIONS RESTORED)
+# 7. INFERENCE LAB (ALL DESCRIPTIONS RESTORED)
 selected_row = base_df[base_df['customerID'] == st.session_state.selected_id].iloc[0]
 target_id = st.session_state.selected_id
 
@@ -124,7 +125,7 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# 9. XAI & BUSINESS IMPACT (DESCRIPTIONS RESTORED)
+# 9. XAI & BUSINESS IMPACT (ALL DESCRIPTIONS RESTORED)
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 st.markdown('<p class="how-to">Visualizes the top factors driving this customer\'s risk score.</p>', unsafe_allow_html=True)
 st.markdown(f"<p style='color: #94A3B8; font-size: 14px;'>Key Driver: <span style='color: white;'>{cfg['label']}</span></p>", unsafe_allow_html=True)
