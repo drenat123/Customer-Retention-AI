@@ -6,9 +6,8 @@ import numpy as np
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 THE "BRUTE FORCE" CSS ENGINE
+# 🎨 THE GLOW ENGINE (Orange Warning Update)
 # ==========================================
-# This targets the internal data-testid of Streamlit metrics directly.
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -20,33 +19,38 @@ st.markdown(f"""
         color: #FFFFFF; 
     }}
 
-    /* TARGETING THE NUMBERS DIRECTLY BY LABEL CONTENT */
-    /* Blue/Cyan Class */
-    div[data-testid="stMetric"]:has(label:contains("🔵")) [data-testid="stMetricValue"] {{
-        color: #00F0FF !important;
+    /* --- THE NEON GLOW EFFECTS --- */
+    
+    /* GREEN: Good outcomes */
+    div[data-testid="stMetric"]:has(label:contains("🟢")) [data-testid="stMetricValue"] {{ 
+        color: #00FFAB !important; 
+        text-shadow: 0 0 15px rgba(0, 255, 171, 0.6);
     }}
     
-    /* Green Class */
-    div[data-testid="stMetric"]:has(label:contains("🟢")) [data-testid="stMetricValue"] {{
-        color: #00FFAB !important;
+    /* ORANGE: Warning outcomes (Replaces Cyan) */
+    div[data-testid="stMetric"]:has(label:contains("🟠")) [data-testid="stMetricValue"] {{ 
+        color: #FF8C00 !important; 
+        text-shadow: 0 0 15px rgba(255, 140, 0, 0.6);
     }}
     
-    /* Red/Critical Class */
-    div[data-testid="stMetric"]:has(label:contains("🔴")) [data-testid="stMetricValue"] {{
-        color: #FF4D4D !important;
+    /* RED: Critical outcomes */
+    div[data-testid="stMetric"]:has(label:contains("🔴")) [data-testid="stMetricValue"] {{ 
+        color: #FF4D4D !important; 
+        text-shadow: 0 0 15px rgba(255, 77, 77, 0.6);
     }}
     
-    /* Gold Class */
-    div[data-testid="stMetric"]:has(label:contains("🟡")) [data-testid="stMetricValue"] {{
-        color: #FFD700 !important;
+    /* GOLD: Confidence */
+    div[data-testid="stMetric"]:has(label:contains("🟡")) [data-testid="stMetricValue"] {{ 
+        color: #FFD700 !important; 
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
     }}
 
-    [data-testid="stMetricValue"] {{ font-size: 48px !important; font-weight: 700 !important; justify-content: center !important; }}
+    [data-testid="stMetricValue"] {{ font-size: 52px !important; font-weight: 700 !important; justify-content: center !important; }}
     [data-testid="stMetricLabel"] {{ justify-content: center !important; font-size: 14px !important; color: #94A3B8 !important; }}
     
     .stButton > button {{ width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; height: 45px; }}
-    .stButton > button:hover {{ border-color: #00F0FF !important; color: #00F0FF !important; }}
-    .section-label {{ color: #00F0FF; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; margin-top: 20px; }}
+    .stButton > button:hover {{ border-color: #FF8C00 !important; color: #FF8C00 !important; }}
+    .section-label {{ color: #FF8C00; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; margin-top: 20px; }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -71,6 +75,7 @@ def load_data(prefix):
 
 base_df = load_data(cfg['prefix'])
 
+# Crash Protection logic for Industry Switching
 if 'selected_id' not in st.session_state or not st.session_state.selected_id.startswith(cfg['prefix']):
     st.session_state.selected_id = base_df.iloc[0]['customerID']
 if 'active_discount' not in st.session_state:
@@ -96,7 +101,7 @@ st.markdown(f'<p class="section-label">2. Simulation Lab: {st.session_state.sele
 
 c1, c2 = st.columns(2)
 with c1:
-    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(row['tenure']), help="Loyalty time.")
+    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(row['tenure']), help="Adjust customer loyalty duration.")
     contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"])
 with c2:
     monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(row['MonthlyCharges']))
@@ -116,17 +121,20 @@ base_risk = max(5, min(95, base_risk - (tenure * 0.3)))
 sim_risk = max(5, base_risk - (st.session_state.active_discount * 0.6))
 savings = ((base_risk/100) * (monthly * 24)) - ((sim_risk/100) * ((monthly * (1 - st.session_state.active_discount/100)) * 24))
 
-# 5. REACTIVE RESULTS
+# 5. REACTIVE GLOWING RESULTS
 st.markdown("---")
 m1, m2 = st.columns(2)
 with m1:
-    # If risk is high, use RED emoji/class, else BLUE
-    risk_emoji = "🔴" if sim_risk > 35 else "🔵"
-    st.metric(f"{risk_emoji} SIMULATED RISK", f"{sim_risk:.1f}%", help="Churn probability.")
+    # Logic: Risk > 50 (Red), Risk 20-50 (Orange Warning), Risk < 20 (Green Good)
+    if sim_risk > 50: risk_icon, risk_txt = "🔴", "CRITICAL"
+    elif sim_risk > 20: risk_icon, risk_txt = "🟠", "WARNING"
+    else: risk_icon, risk_txt = "🟢", "STABLE"
+    st.metric(f"{risk_icon} {risk_txt} RISK", f"{sim_risk:.1f}%", help="AI predicted churn likelihood.")
+
 with m2:
-    # If savings are high, use GREEN, else RED
-    save_emoji = "🟢" if savings > 500 else "🔴"
-    st.metric(f"{save_emoji} REVENUE SAFEGUARDED", f"+${savings:,.2f}", help="Dollars protected.")
+    # Logic: High savings (>800) Green, else Orange
+    save_icon = "🟢" if savings > 800 else "🟠"
+    st.metric(f"{save_icon} REVENUE SAFEGUARDED", f"+${savings:,.2f}", help="Projected revenue recovery.")
 
 # 6. XAI & MACRO
 st.markdown("---")
@@ -143,7 +151,7 @@ st.markdown("---")
 st.markdown('<p class="section-label">4. Macro Business Impact</p>', unsafe_allow_html=True)
 bi1, bi2, bi3 = st.columns(3)
 with bi1: st.metric("🟢 ANNUAL SAVINGS", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}")
-with bi2: st.metric("🔵 EFFICIENCY", "91%")
+with bi2: st.metric("🟠 EFFICIENCY", "91%")
 with bi3: st.metric("🟡 CONFIDENCE", "94.2%")
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani</p>", unsafe_allow_html=True)
