@@ -59,7 +59,7 @@ def get_industry_data(prefix):
 
 base_df = get_industry_data(cfg['prefix'])
 
-# CRITICAL FIX: Session State Sync
+# Session State Sync
 if 'selected_id' not in st.session_state or not st.session_state.selected_id.startswith(cfg['prefix']):
     st.session_state.selected_id = base_df.iloc[0]['customerID']
 if 'active_discount' not in st.session_state:
@@ -79,7 +79,7 @@ if not checked_rows.empty:
         st.session_state.selected_id = new_id
         st.rerun()
 
-# 4. SECTION 2: SIMULATION LAB (ALL TOOLTIPS RESTORED)
+# 4. SECTION 2: SIMULATION LAB
 target_id = st.session_state.selected_id
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
@@ -107,33 +107,41 @@ base_risk = max(5, min(95, base_risk - (tenure * 0.3)))
 sim_risk = max(5, base_risk - (st.session_state.active_discount * 0.6))
 savings = ((base_risk/100) * (monthly * 24)) - ((sim_risk/100) * ((monthly * (1 - st.session_state.active_discount/100)) * 24))
 
-# 5. DYNAMIC RESULTS (Colors react to thresholds)
+# 5. DYNAMIC RESULTS
 st.markdown("---")
 m1, m2 = st.columns(2)
 with m1:
-    # Logic: If risk > 30, use "CRITICAL" label (Red), else "STABLE" (Cyan)
     status_label = "🔴 CRITICAL RISK" if sim_risk > 30 else "🔵 STABLE RISK"
     st.metric(status_label, f"{sim_risk:.1f}%", help="The AI's predicted churn probability for this scenario.")
 with m2:
     st.metric("🟢 REVENUE SAFEGUARDED", f"+${savings:,.2f}", help="Total dollar amount protected from loss.")
 
-# 6. SECTION 3: XAI
+# 6. SECTION 3: XAI (EMOJI REACTIVITY UPDATED)
 st.markdown("---")
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 x1, x2 = st.columns(2)
 with x1:
-    impact_color = "🔴" if contract == "Standard" else "🟢"
-    st.metric(f"{impact_color} {cfg['label']} IMPACT", "High" if contract == "Standard" else "Low", help="Correlation between contract type and churn.")
+    # REACTIVE: Red if Standard (High risk), Green if others
+    impact_emoji = "🔴" if contract == "Standard" else "🟢"
+    st.metric(f"{impact_emoji} {cfg['label']} IMPACT", "High" if contract == "Standard" else "Low")
 with x2:
-    sup_color = "🔴" if not has_support else "🟢"
-    st.metric(f"{sup_color} SUPPORT IMPACT", "High" if not has_support else "Low", help="Impact of priority support on this customer.")
+    # REACTIVE: Red if no support (High risk), Green if supported
+    sup_emoji = "🔴" if not has_support else "🟢"
+    st.metric(f"{sup_emoji} SUPPORT IMPACT", "High" if not has_support else "Low")
 
-# 7. SECTION 4: MACRO IMPACT
+# 7. SECTION 4: MACRO IMPACT (EMOJI REACTIVITY UPDATED)
 st.markdown("---")
 st.markdown('<p class="section-label">4. Macro Business Impact Projection</p>', unsafe_allow_html=True)
 bi1, bi2, bi3 = st.columns(3)
-with bi1: st.metric("🟢 ANNUAL SAVINGS", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}", help="Projected yearly recovery.")
-with bi2: st.metric("🔵 EFFICIENCY", "91%", help="Model accuracy rate.")
-with bi3: st.metric("🟡 CONFIDENCE", "94.2%", help="AI confidence in this specific prediction.")
+with bi1: 
+    # REACTIVE: Red if negative/low, Green if positive
+    savings_emoji = "🟢" if savings > 0 else "🔴"
+    st.metric(f"{savings_emoji} ANNUAL SAVINGS", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}")
+with bi2: 
+    st.metric("🔵 EFFICIENCY", "91%")
+with bi3: 
+    # REACTIVE: Red if risk too high, Yellow if stable
+    conf_emoji = "🔴" if sim_risk > 60 else "🟡"
+    st.metric(f"{conf_emoji} CONFIDENCE", "94.2%")
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani</p>", unsafe_allow_html=True)
