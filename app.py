@@ -2,95 +2,85 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# 1. Premium Page Config
-st.set_page_config(page_title="Executive Insights", layout="wide")
+# 1. Page Config
+st.set_page_config(page_title="Executive Command Center", layout="wide", initial_sidebar_state="collapsed")
 
-# Custom CSS for a "Premium" feel (Clean fonts and spacing)
+# 2. Ultra-Premium Styling (Custom CSS)
 st.markdown("""
     <style>
-    .main { background-color: #0e1117; }
-    .stMetric { background-color: #161b22; border-radius: 10px; padding: 15px; border: 1px solid #30363d; }
+    /* Main Background */
+    .stApp { background-color: #050505; color: #ffffff; }
+    
+    /* Premium Metric Cards */
+    [data-testid="stMetric"] {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        transition: 0.3s;
+    }
+    [data-testid="stMetric"]:hover { border: 1px solid #00ff88; background: rgba(0, 255, 136, 0.02); }
+    
+    /* Buttons and Sliders */
+    .stSlider > div > div > div > div { background-color: #00ff88; }
+    
+    /* Tab Styling */
+    .stTabs [data-baseweb="tab-list"] { gap: 10px; }
+    .stTabs [data-baseweb="tab"] {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 10px 10px 0px 0px;
+        padding: 10px 20px;
+        color: white;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. Sidebar Navigation
-st.sidebar.title("💎 Luxury Retail AI")
-menu = st.sidebar.radio("Navigate", ["Company Overview", "Customer Search", "Strategy Lab"])
+# 3. Header & Navigation
+st.markdown("<h1 style='text-align: center; color: #00ff88; margin-bottom: 0;'>COMMAND CENTER</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; opacity: 0.6; margin-top: 0;'>AI-Powered Customer Intelligence Feed</p>", unsafe_allow_html=True)
 
-# --- DATASET (Simulated for your academy project) ---
+tab1, tab2, tab3 = st.tabs(["📊 Market Health", "🔍 Customer Deep-Dive", "🧪 Strategy Sandbox"])
+
+# DATA (Simulated)
 data = pd.DataFrame({
-    'Name': ['Tech Corp', 'Global Logistics', 'Retail Giant', 'Alpha Design', 'Omega Inc'],
-    'Status': ['🚨 Critical', '✅ Healthy', '⚠️ Warning', '✅ Healthy', '🚨 Critical'],
-    'Health_Score': [14, 92, 45, 88, 12],
-    'Revenue': [5000, 12000, 3500, 9000, 4200],
-    'Last_Contact': ['2 days ago', '1 month ago', '5 days ago', '2 weeks ago', 'Yesterday']
+    'Name': ['Tech Corp', 'Global Logistics', 'Retail Giant', 'Alpha Design'],
+    'Risk': [88, 12, 45, 10],
+    'Value': [5000, 12000, 3500, 9000]
 })
 
-# ---------------------------------------------------------
-# TAB 1: COMPANY OVERVIEW
-# ---------------------------------------------------------
-if menu == "Company Overview":
-    st.title("Company Health Overview")
-    st.markdown("A bird's-eye view of your business stability.")
+# --- TAB 1: DASHBOARD ---
+with tab1:
+    st.markdown("### National Overview")
+    m1, m2, m3 = st.columns(3)
+    m1.metric("REVENUE AT RISK", "$142,500", "-5%")
+    m2.metric("HEALTH INDEX", "92/100", "+2")
+    m3.metric("SAVED REVENUE", "$45,200", "Live")
     
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total Revenue at Risk", "$9,200", "🚨")
-    col2.metric("Overall Loyalty", "84%", "+2%")
-    col3.metric("Active Saving Campaigns", "3", "Active")
-
     st.markdown("---")
-    st.markdown("### Why are customers leaving?")
-    fig = px.bar(data, x='Name', y='Health_Score', color='Health_Score', 
-                 color_continuous_scale='RdYlGn', title="Individual Customer Health Scores")
+    fig = px.area(data, x='Name', y='Risk', title="Volatility Trend", 
+                 color_discrete_sequence=['#00ff88'])
+    fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', 
+                      font_color="white", height=300)
     st.plotly_chart(fig, use_container_width=True)
 
-# ---------------------------------------------------------
-# TAB 2: CUSTOMER SEARCH (The Specific Look-up)
-# ---------------------------------------------------------
-elif menu == "Customer Search":
-    st.title("Customer Intelligence Lookup")
+# --- TAB 2: SEARCH ---
+with tab2:
+    target = st.selectbox("Select Client", data['Name'])
+    client = data[data['Name'] == target].iloc[0]
     
-    search_query = st.selectbox("Select a specific customer to inspect:", data['Name'])
-    
-    # Get specific customer data
-    user_data = data[data['Name'] == search_query].iloc[0]
-    
-    st.markdown(f"## Report for: {search_query}")
-    
-    c1, c2, c3 = st.columns(3)
+    c1, c2 = st.columns([1, 2])
     with c1:
-        st.write("**Current Status**")
-        st.subheader(user_data['Status'])
+        st.markdown(f"## {target}")
+        st.write(f"Monthly Value: **${client['Value']}**")
+        st.write("Engagement Status: **Active**")
     with c2:
-        st.write("**Customer Value**")
-        st.subheader(f"${user_data['Revenue']}")
-    with c3:
-        st.write("**Last Interaction**")
-        st.subheader(user_data['Last_Contact'])
+        # Progress bar for risk
+        r_color = "red" if client['Risk'] > 50 else "green"
+        st.markdown(f"<h3 style='color: {r_color}'>Risk Level: {client['Risk']}%</h3>", unsafe_allow_html=True)
+        st.progress(client['Risk'] / 100)
 
-    st.markdown("---")
-    
-    # Visual Health Gauge
-    score = user_data['Health_Score']
-    st.write(f"**Health Rating: {score}/100**")
-    st.progress(score / 100)
-    
-    if score < 30:
-        st.error("🛑 ACTION REQUIRED: This customer is highly likely to leave. Schedule a meeting today.")
-    elif score < 60:
-        st.warning("⚠️ PROACTIVE OUTREACH: Send a loyalty bonus or check-in email.")
-    else:
-        st.success("✨ ALL CLEAR: Customer is satisfied and engaged.")
-
-# ---------------------------------------------------------
-# TAB 3: STRATEGY LAB
-# ---------------------------------------------------------
-else:
-    st.title("Strategy Simulation Lab")
-    st.write("Test how changes in your service affect customer loyalty.")
-    
-    # Simple Slider Logic
-    service_quality = st.select_slider("Improve Support Speed", options=["Slow", "Average", "Fast", "Instant"])
-    price_change = st.slider("Price Discount (%)", 0, 50, 0)
-    
-    st.info(f"By choosing **{service_quality}** support and a **{price_change}%** discount, you could save an estimated **12%** more customers next month.")
+# --- TAB 3: LAB ---
+with tab3:
+    st.markdown("### Risk Mitigation Simulator")
+    promo = st.select_slider("Loyalty Program Tier", options=["Basic", "Silver", "Gold", "Platinum"])
+    st.info(f"Applying **{promo}** tier incentives would likely reduce churn by **{20 if promo == 'Platinum' else 5}%**.")
