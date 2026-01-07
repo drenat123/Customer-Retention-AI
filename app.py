@@ -18,24 +18,31 @@ st.markdown("""
     .nba-card { background: linear-gradient(145deg, #161B22, #0D1117); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 16px; padding: 25px; margin-bottom: 25px; }
     .nba-badge { background: #00F0FF; color: #0B0E14; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
     .section-label { color: #00F0FF; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
+    
+    /* NEW: SIMULATOR STYLING */
+    .simulator-panel {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px dashed #30363D;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# NEW: MULTI-NICHE DATABASE SWITCHER
+# BRANDING & NICHE SWITCHER (PRESERVED)
 # ---------------------------------------------------------
 st.markdown("<h1 style='color: white; margin-top: -60px; font-size: 32px;'>🛡️ AI Retention Hub</h1>", unsafe_allow_html=True)
 
 selected_niche = st.selectbox("📂 Select Industry Database", ["Telecommunications", "Healthcare (Hospitals)", "SaaS & Tech", "Retail Banking"])
 
-# Dynamic Niche Logic
 niche_configs = {
     "Telecommunications": {"scale": "7,043", "leakage": "$142.5K", "source": "IBM Cognos / Telco Dataset", "label": "Contract Type"},
     "Healthcare (Hospitals)": {"scale": "12,400", "leakage": "$890K", "source": "Hospital Patient Outflow Data", "label": "Insurance Provider"},
     "SaaS & Tech": {"scale": "5,120", "leakage": "$210K", "source": "B2B Subscription Data", "label": "Plan Level"},
     "Retail Banking": {"scale": "15,000", "leakage": "$1.2M", "source": "Financial Portfolio Churn", "label": "Account Type"}
 }
-
 cfg = niche_configs[selected_niche]
 
 st.markdown(f"""
@@ -58,7 +65,7 @@ st.markdown(f"""
 st.markdown("<p style='color: #484F58; font-size: 12px; margin-bottom: 30px;'>Engineered by <b>Drenat Nallbani</b></p>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# SECTION 1: EXECUTIVE SUMMARY (DYNAMIC)
+# SECTION 1: EXECUTIVE SUMMARY (PRESERVED)
 # ---------------------------------------------------------
 st.markdown('<p class="section-label">1. Executive Summary</p>', unsafe_allow_html=True)
 m1, m2, m3 = st.columns(3)
@@ -78,25 +85,50 @@ with c2:
     monthly = st.number_input("Monthly Value ($)", 18, 500, 80)
     has_support = st.checkbox("Priority Support / Concierge?", value=True)
 
-# LOGIC & FINANCIALS (PRESERVED)
+# BASE RISK CALCULATION
 risk = 35 if contract == "Standard" else 10
 if not has_support: risk += 15
 risk = max(5, min(95, risk - (tenure * 0.3)))
-clv = monthly * 24
-revenue_at_risk = (risk / 100) * clv
 
+# ---------------------------------------------------------
+# NEW IMPLEMENTATION: WHAT-IF REVENUE SIMULATOR
+# ---------------------------------------------------------
+st.markdown('<div class="simulator-panel">', unsafe_allow_html=True)
+st.markdown('<p class="section-label" style="color: #FFFFFF; font-size: 11px;">🛠️ WHAT-IF STRATEGY SANDBOX</p>', unsafe_allow_html=True)
+
+col_sim1, col_sim2 = st.columns(2)
+with col_sim1:
+    sim_discount = st.select_slider("Apply Retention Discount (%)", options=[0, 10, 20, 30, 40, 50], value=0)
+with col_sim2:
+    sim_support = st.toggle("Simulate adding Premium Support", value=has_support)
+
+# Dynamic Simulation Math
+sim_risk = risk
+if sim_discount > 0: sim_risk -= (sim_discount * 0.5) # Discounts lower risk
+if sim_support and not has_support: sim_risk -= 15 # Support lowers risk
+sim_risk = max(5, sim_risk)
+
+# Financial Delta
+original_revenue = (risk / 100) * (monthly * 24)
+sim_revenue = (sim_risk / 100) * ((monthly * (1 - sim_discount/100)) * 24)
+savings = original_revenue - sim_revenue
+
+st.markdown(f"""
+    <div style="display: flex; gap: 20px; margin-top: 15px;">
+        <div><p style="color: #94A3B8; font-size: 12px; margin:0;">New Risk Score</p><h3 style="color: #00F0FF; margin:0;">{sim_risk:.1f}%</h3></div>
+        <div><p style="color: #94A3B8; font-size: 12px; margin:0;">Estimated Net Savings</p><h3 style="color: #00FFAB; margin:0;">+${savings:,.2f}</h3></div>
+    </div>
+""", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ---------------------------------------------------------
+# STRATEGY ENGINE & TECHNICAL AUDIT (PRESERVED)
+# ---------------------------------------------------------
 st.markdown("---")
-f1, f2 = st.columns(2)
-f1.metric("Individual LTV (24mo)", f"${clv:,.0f}")
-f2.metric("Revenue at Risk", f"${revenue_at_risk:,.2f}", f"-{risk:.1f}% Score", delta_color="inverse")
-
-# ---------------------------------------------------------
-# STRATEGY ENGINE (PRESERVED)
-# ---------------------------------------------------------
 if risk > 40:
-    icon, title, action = "🚨", "Risk Mitigation Plan", f"High-risk {selected_niche} profile. Implement retention protocol to save ${revenue_at_risk:,.2f}."
+    icon, title, action = "🚨", "Risk Mitigation Plan", f"High-risk profile. Sandbox shows potential savings of <b>${savings:,.2f}</b> with proposed changes."
 else:
-    icon, title, action = "✅", "Growth Strategy", f"Stable {selected_niche} profile. Target for expansion and high-tier upgrades."
+    icon, title, action = "✅", "Growth Strategy", f"Stable profile. Focus on expansion to maximize 24-month LTV."
 
 st.markdown(f"""
     <div class="nba-card">
@@ -108,9 +140,6 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# ---------------------------------------------------------
-# SECTION 3: TECHNICAL AUDIT (PRESERVED)
-# ---------------------------------------------------------
 st.markdown('<p class="section-label" style="margin-top: 30px;">3. Technical Audit</p>', unsafe_allow_html=True)
 t1, t2, t3 = st.columns(3)
 t1.metric("Confidence", "94.2%", "XGBoost")
