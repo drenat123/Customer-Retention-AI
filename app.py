@@ -6,55 +6,64 @@ import numpy as np
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 THE GLOW ENGINE (Orange Warning Update)
+# 🎨 THE SCREENSHOT CSS (The "Old" Method)
 # ==========================================
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
     header, [data-testid="stHeader"] {{ display: none !important; }}
     
-    html, body, [class*="st-"] {{ 
-        font-family: 'Plus Jakarta Sans', sans-serif; 
+    html, body, [data-testid="stAppViewContainer"] {{ 
         background-color: #0B0E14 !important;
-        color: #FFFFFF; 
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }}
 
-    /* --- THE NEON GLOW EFFECTS --- */
-    
-    /* GREEN: Good outcomes */
-    div[data-testid="stMetric"]:has(label:contains("🟢")) [data-testid="stMetricValue"] {{ 
-        color: #00FFAB !important; 
-        text-shadow: 0 0 15px rgba(0, 255, 171, 0.6);
-    }}
-    
-    /* ORANGE: Warning outcomes (Replaces Cyan) */
-    div[data-testid="stMetric"]:has(label:contains("🟠")) [data-testid="stMetricValue"] {{ 
-        color: #FF8C00 !important; 
-        text-shadow: 0 0 15px rgba(255, 140, 0, 0.6);
-    }}
-    
-    /* RED: Critical outcomes */
-    div[data-testid="stMetric"]:has(label:contains("🔴")) [data-testid="stMetricValue"] {{ 
-        color: #FF4D4D !important; 
-        text-shadow: 0 0 15px rgba(255, 77, 77, 0.6);
-    }}
-    
-    /* GOLD: Confidence */
-    div[data-testid="stMetric"]:has(label:contains("🟡")) [data-testid="stMetricValue"] {{ 
-        color: #FFD700 !important; 
-        text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+    /* THE EXACT CSS THAT WORKED BEFORE */
+    /* Target the metric value specifically by bypasssing the label container */
+    [data-testid="stMetricValue"] {{
+        font-size: 52px !important;
+        font-weight: 700 !important;
     }}
 
-    [data-testid="stMetricValue"] {{ font-size: 52px !important; font-weight: 700 !important; justify-content: center !important; }}
-    [data-testid="stMetricLabel"] {{ justify-content: center !important; font-size: 14px !important; color: #94A3B8 !important; }}
-    
-    .stButton > button {{ width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; height: 45px; }}
-    .stButton > button:hover {{ border-color: #FF8C00 !important; color: #FF8C00 !important; }}
-    .section-label {{ color: #FF8C00; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; margin-top: 20px; }}
+    /* Logic: If label contains the emoji, paint the number below it */
+    div[data-testid="stMetric"]:has(label:contains("🟢")) [data-testid="stMetricValue"] {{
+        color: #00FFAB !important;
+        text-shadow: 0 0 15px rgba(0, 255, 171, 0.7) !important;
+    }}
+
+    div[data-testid="stMetric"]:has(label:contains("🟠")) [data-testid="stMetricValue"] {{
+        color: #FF8C00 !important;
+        text-shadow: 0 0 15px rgba(255, 140, 0, 0.7) !important;
+    }}
+
+    div[data-testid="stMetric"]:has(label:contains("🔴")) [data-testid="stMetricValue"] {{
+        color: #FF4D4D !important;
+        text-shadow: 0 0 15px rgba(255, 77, 77, 0.7) !important;
+    }}
+
+    div[data-testid="stMetric"]:has(label:contains("🔵")) [data-testid="stMetricValue"] {{
+        color: #00F0FF !important;
+        text-shadow: 0 0 15px rgba(0, 240, 255, 0.7) !important;
+    }}
+
+    div[data-testid="stMetric"]:has(label:contains("🟡")) [data-testid="stMetricValue"] {{
+        color: #FFD700 !important;
+    }}
+
+    [data-testid="stMetricLabel"] {{
+        color: #94A3B8 !important;
+        text-transform: uppercase;
+        font-size: 13px !important;
+        letter-spacing: 1px;
+    }}
+
+    .stButton > button {{ width: 100%; background: transparent; color: white; border: 1px solid #30363D; border-radius: 8px; height: 45px; }}
+    .stButton > button:hover {{ border-color: #00FFAB; color: #00FFAB; }}
+    .section-label {{ color: #00F0FF; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-top: 20px; }}
     </style>
     """, unsafe_allow_html=True)
 
-# 2. DATA ENGINE
+# 2. STABLE DATA ENGINE (No IndexErrors)
 selected_niche = st.selectbox("📂 Select Industry Database", ["Telecommunications", "Healthcare", "SaaS", "Banking"])
 n_cfg = {
     "Telecommunications": {"scale": 7043, "label": "Contract Type", "prefix": "TELCO"},
@@ -75,7 +84,7 @@ def load_data(prefix):
 
 base_df = load_data(cfg['prefix'])
 
-# Crash Protection logic for Industry Switching
+# Session Sync to prevent the blank screen/loading hang
 if 'selected_id' not in st.session_state or not st.session_state.selected_id.startswith(cfg['prefix']):
     st.session_state.selected_id = base_df.iloc[0]['customerID']
 if 'active_discount' not in st.session_state:
@@ -95,19 +104,19 @@ if not checked_rows.empty:
         st.session_state.selected_id = new_id
         st.rerun()
 
-# 4. SIMULATION LAB
+# 4. SIMULATION
 row = base_df[base_df['customerID'] == st.session_state.selected_id].iloc[0]
 st.markdown(f'<p class="section-label">2. Simulation Lab: {st.session_state.selected_id}</p>', unsafe_allow_html=True)
 
 c1, c2 = st.columns(2)
 with c1:
-    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(row['tenure']), help="Adjust customer loyalty duration.")
+    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(row['tenure']))
     contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"])
 with c2:
     monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(row['MonthlyCharges']))
     has_support = st.checkbox("Simulate Priority Support?", value=True)
 
-# Offer Buttons
+# Buttons
 b1, b2, b3, b4 = st.columns(4)
 with b1: st.button("No Offer", on_click=lambda: st.session_state.update({"active_discount": 0}))
 with b2: st.button("10% Off", on_click=lambda: st.session_state.update({"active_discount": 10}))
@@ -121,37 +130,36 @@ base_risk = max(5, min(95, base_risk - (tenure * 0.3)))
 sim_risk = max(5, base_risk - (st.session_state.active_discount * 0.6))
 savings = ((base_risk/100) * (monthly * 24)) - ((sim_risk/100) * ((monthly * (1 - st.session_state.active_discount/100)) * 24))
 
-# 5. REACTIVE GLOWING RESULTS
+# 5. DYNAMIC COLOR RESULTS
 st.markdown("---")
 m1, m2 = st.columns(2)
 with m1:
-    # Logic: Risk > 50 (Red), Risk 20-50 (Orange Warning), Risk < 20 (Green Good)
-    if sim_risk > 50: risk_icon, risk_txt = "🔴", "CRITICAL"
-    elif sim_risk > 20: risk_icon, risk_txt = "🟠", "WARNING"
-    else: risk_icon, risk_txt = "🟢", "STABLE"
-    st.metric(f"{risk_icon} {risk_txt} RISK", f"{sim_risk:.1f}%", help="AI predicted churn likelihood.")
+    # Color Switching logic
+    if sim_risk > 50: icon = "🔴"
+    elif sim_risk > 20: icon = "🟠"
+    else: icon = "🟢"
+    st.metric(f"{icon} SIMULATED RISK", f"{sim_risk:.1f}%", help="AI risk probability.")
 
 with m2:
-    # Logic: High savings (>800) Green, else Orange
-    save_icon = "🟢" if savings > 800 else "🟠"
-    st.metric(f"{save_icon} REVENUE SAFEGUARDED", f"+${savings:,.2f}", help="Projected revenue recovery.")
+    s_icon = "🟢" if savings > 800 else "🟠"
+    st.metric(f"{s_icon} REVENUE SAFEGUARDED", f"+${savings:,.2f}", help="Revenue protected.")
 
 # 6. XAI & MACRO
 st.markdown("---")
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 x1, x2 = st.columns(2)
 with x1:
-    x_icon = "🔴" if contract == "Standard" else "🟢"
-    st.metric(f"{x_icon} {cfg['label']} IMPACT", "High" if contract == "Standard" else "Low")
+    xi = "🔴" if contract == "Standard" else "🟢"
+    st.metric(f"{xi} {cfg['label']} IMPACT", "High" if contract == "Standard" else "Low")
 with x2:
-    s_icon = "🔴" if not has_support else "🟢"
-    st.metric(f"{s_icon} SUPPORT IMPACT", "High" if not has_support else "Low")
+    si = "🔴" if not has_support else "🟢"
+    st.metric(f"{si} SUPPORT IMPACT", "High" if not has_support else "Low")
 
 st.markdown("---")
 st.markdown('<p class="section-label">4. Macro Business Impact</p>', unsafe_allow_html=True)
 bi1, bi2, bi3 = st.columns(3)
 with bi1: st.metric("🟢 ANNUAL SAVINGS", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}")
-with bi2: st.metric("🟠 EFFICIENCY", "91%")
+with bi2: st.metric("🔵 EFFICIENCY", "91%")
 with bi3: st.metric("🟡 CONFIDENCE", "94.2%")
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani</p>", unsafe_allow_html=True)
