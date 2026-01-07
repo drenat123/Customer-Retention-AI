@@ -2,10 +2,15 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# 1. Page Config - Clean & Professional
-st.set_page_config(page_title="AI Retention Hub", layout="wide")
+# 1. FORCE PAGE TITLE (This fixes the 'keyboard_doubl' top bar)
+st.set_page_config(
+    page_title="AI Retention Hub",
+    page_icon="🛡️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# 2. PREMIUM CSS
+# 2. PREMIUM CSS (Clean Metrics & Glowing UI)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -16,7 +21,7 @@ st.markdown("""
         color: #F8FAFC; 
     }
 
-    /* CLEAN METRIC CARDS */
+    /* REMOVE DARK BLOCKS FROM METRICS */
     div[data-testid="stMetric"] { 
         background: rgba(255, 255, 255, 0.03) !important; 
         border: 1px solid rgba(255, 255, 255, 0.1) !important; 
@@ -24,7 +29,7 @@ st.markdown("""
         padding: 20px !important;
     }
 
-    /* THE CYAN BADGE SLIDER */
+    /* CYAN BADGE SLIDER */
     .stSlider [data-baseweb="slider"] [role="slider"] {
         height: 30px !important;
         width: 65px !important;
@@ -34,7 +39,7 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(0, 240, 255, 0.5) !important;
     }
     
-    /* GLOWING PULSE BUTTONS */
+    /* GLOWING RADIO BUTTON SELECTIONS */
     div[data-testid="stWidgetLabel"] p { font-size: 1rem; color: #94A3B8; }
     
     .stRadio [role="radiogroup"] {
@@ -63,32 +68,19 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# ---------------------------------------------------------
-# SIDEBAR: KEY INSIGHTS (The "Master" Layer)
-# ---------------------------------------------------------
+# 3. SIDEBAR: MODEL INTELLIGENCE
 with st.sidebar:
     st.markdown("<h2 style='color: #00F0FF;'>🧠 Model Intelligence</h2>", unsafe_allow_html=True)
     st.markdown("---")
     
     st.markdown("### 💰 Revenue Focus")
-    st.info("""
-    The **Executive Summary** converts ML predictions into dollars. 
-    By flagging $142.5K at risk, we prioritize retention efforts 
-    where the financial impact is highest.
-    """)
+    st.info("The Executive Summary flags $142.5K at risk to prioritize financial impact.")
     
     st.markdown("### 🔍 Risk Auditing")
-    st.info("""
-    Every prediction includes a **Confidence Score**. 
-    High confidence means the AI has identified a clear 
-    pattern of churn based on historical behavior.
-    """)
+    st.info("Predictions include a Confidence Score based on historical exit intent patterns.")
     
     st.markdown("### 🔮 Prescriptive Action")
-    st.info("""
-    The **Inference Lab** (Section 4) doesn't just predict risk; 
-    it provides a strategic recommendation to guide your team's next move.
-    """)
+    st.info("The Lab provides strategic recommendations to guide retention calls.")
     
     st.markdown("---")
     st.caption("Developed by Drenat Nallbani")
@@ -103,7 +95,7 @@ def load_data():
 
 df = load_data()
 
-# --- HEADER (CLEANED) ---
+# --- HEADER ---
 st.markdown("<h1 style='color: white;'>🛡️ AI Retention Hub</h1>", unsafe_allow_html=True)
 st.markdown("<p style='color: #64748B;'>Data Science Project by <b>Drenat Nallbani</b></p>", unsafe_allow_html=True)
 
@@ -112,6 +104,7 @@ st.markdown("<p style='color: #64748B;'>Data Science Project by <b>Drenat Nallba
 # ---------------------------------------------------------
 st.markdown('<div class="section-header">1. The Business Problem</div>', unsafe_allow_html=True)
 st.write("Analyzing 7,043 records to identify patterns leading to customer churn.")
+
 m1, m2, m3 = st.columns(3)
 m1.metric("Database Scale", "7,043", "Real Records")
 m2.metric("Portfolio Churn", "26.5%", "Network Wide")
@@ -165,7 +158,7 @@ with col_right:
     support_val = st.radio("Access to Tech Support?", ["Yes", "No"], horizontal=True)
     billing_val = st.radio("Paperless Billing?", ["Yes", "No"], horizontal=True)
 
-# AI Risk Calculation Logic
+# Logic for results
 score = 0
 if contract_val == "Month-to-month": score += 45
 if support_val == "No": score += 15
