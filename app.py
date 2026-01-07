@@ -5,7 +5,7 @@ import numpy as np
 # 1. Page Config (RESTORED)
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
-# 2. THE ULTIMATE CSS ENGINE (RESTORED & LOCKED)
+# 2. THE ULTIMATE CSS ENGINE (LOCKED)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
@@ -16,17 +16,10 @@ st.markdown("""
         color: #FFFFFF; 
     }
     .glass-card { background: #161B22; border: 1px solid #30363D; border-radius: 12px; padding: 24px; margin-bottom: 25px; }
-    div[data-testid="stMarkdownContainer"], div[data-testid="stVerticalBlock"], div[data-testid="stHorizontalBlock"] {
-        background-color: transparent !important; border: none !important;
-    }
-    .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; }
-    .stButton > button:hover { border-color: #00F0FF !important; color: #00F0FF !important; }
-    .niche-tag { background: rgba(0, 240, 255, 0.1); border: 1px solid #00F0FF; color: #00F0FF; padding: 2px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-right: 8px; }
-    .nba-card { background: linear-gradient(145deg, #161B22, #0D1117); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 16px; padding: 25px; margin-bottom: 25px; }
-    .nba-badge { background: #00F0FF; color: #0B0E14; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
     .section-label { color: #00F0FF; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
     .metric-container { text-align: center; }
     .how-to { color: #484F58; font-size: 12px; margin-top: -10px; margin-bottom: 15px; }
+    .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -53,38 +46,42 @@ def get_industry_data(niche):
     if niche == "Healthcare": df['MonthlyCharges'] = df['MonthlyCharges'] * 12
     np.random.seed(len(niche)) 
     df['RiskScore'] = [f"{np.random.randint(10, 98)}%" for _ in range(len(df))]
-    # Add a selection column for the table
+    # Setup for selection column
     df.insert(0, "Select", False)
     return df
 
-df = get_industry_data(selected_niche)
+df = get_industry_data(selected_niche).copy()
 
-# 5. RISK LEADERBOARD (DESCRIPTIONS RESTORED)
+# 5. RISK LEADERBOARD (DESCRIPTIONS FULLY RESTORED)
 st.markdown('<p class="section-label" style="margin-top:20px;">1. Automated Risk Priority Queue</p>', unsafe_allow_html=True)
-st.markdown(f'<p class="how-to">Live {selected_niche} database ranked by predicted attrition risk. Check the "Select" box to analyze a user.</p>', unsafe_allow_html=True)
+st.markdown(f'<p class="how-to">Live {selected_niche} database ranked by predicted attrition risk. Check one "Select" box to load a specific user into the lab.</p>', unsafe_allow_html=True)
 
 display_df = df[['Select', 'customerID', 'tenure', 'MonthlyCharges', 'Contract', 'RiskScore']].copy()
 display_df.columns = ['Select', 'Customer ID', 'Tenure', 'Value ($)', cfg['label'], 'AI Risk Score']
 
-# Stable Data Editor for Selection
+# Interactive Table with Checkbox
 edited_df = st.data_editor(
     display_df,
     hide_index=True,
     column_config={"Select": st.column_config.CheckboxColumn(required=True)},
     disabled=['Customer ID', 'Tenure', 'Value ($)', cfg['label'], 'AI Risk Score'],
     use_container_width=True,
+    key="table_editor"
 )
 
-# Logic to find which row was checked
-selected_rows = edited_df[edited_df['Select'] == True]
-if not selected_rows.empty:
-    target_id = selected_rows.iloc[-1]['Customer ID']
+# SINGLE SELECTION LOGIC
+selected_indices = edited_df[edited_df['Select'] == True].index.tolist()
+if len(selected_indices) > 0:
+    # Logic to only take the last clicked row
+    chosen_idx = selected_indices[-1]
+    target_id = df.iloc[chosen_idx]['customerID']
 else:
     target_id = df.iloc[0]['customerID']
+    chosen_idx = 0
 
-selected_row = df[df['customerID'] == target_id].iloc[0]
+selected_row = df.iloc[chosen_idx]
 
-# 6. INFERENCE LAB (DESCRIPTIONS RESTORED)
+# 6. INFERENCE LAB (DESCRIPTIONS FULLY RESTORED)
 st.markdown(f'<p class="section-label" style="margin-top: 30px;">2. Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
 st.markdown('<p class="how-to">Test "What-If" scenarios to lower this customer\'s specific risk score.</p>', unsafe_allow_html=True)
 
@@ -102,7 +99,7 @@ if not has_support: risk += 15
 risk = max(5, min(95, risk - (tenure * 0.3)))
 clv = monthly * 24
 
-# 8. RETENTION SANDBOX (RESTORED)
+# 8. RETENTION SANDBOX (FULLY RESTORED)
 st.markdown("---")
 if 'active_discount' not in st.session_state: st.session_state.active_discount = 0
 b1, b2, b3, b4 = st.columns(4)
@@ -128,7 +125,7 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# 9. XAI & BUSINESS IMPACT (RESTORED)
+# 9. XAI & BUSINESS IMPACT (DESCRIPTIONS FULLY RESTORED)
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 st.markdown('<p class="how-to">Visualizes the top factors driving this customer\'s risk score.</p>', unsafe_allow_html=True)
 xai_c1, xai_c2 = st.columns(2)
