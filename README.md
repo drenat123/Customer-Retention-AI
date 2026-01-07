@@ -24,17 +24,4 @@ Acquiring new customers costs 5x more than retaining existing ones. This project
 - **Accuracy:** 98.55%
 - **Recall (Churned):** 0.98 (Essential for identifying every at-risk account).
 - **Precision:** 0.99
-# --- FOOTER / CONTACT SECTION ---
-st.markdown("---")  # Horizontal line to separate content
-st.markdown("### 📞 Let's Connect")
-st.write("If you're looking for a Data Specialist to help optimize your retention strategy or build custom ML tools, feel free to reach out!")
 
-# Use columns for a clean, side-by-side layout
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.markdown("[🔗 LinkedIn](http://linkedin.com/in/drenat-nallbani-b92229392)")
-with col2:
-    st.markdown("[📁 Portfolio/GitHub](https://github.com/drenat123)")
-with col3:
-    st.markdown("[📧 Email Me](dreninallbani@gmail.com)")
