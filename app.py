@@ -61,8 +61,8 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- NEW TITLE LINE (SAFE ADDITION) ---
-st.markdown("<h1 style='color: white; font-weight: 700; margin-bottom: -20px;'>AI Retention Hub</h1>", unsafe_allow_html=True)
+# --- CENTERED TITLE (SAFE ADDITION) ---
+st.markdown("<h1 style='text-align: center; color: white; font-weight: 700; margin-top: -30px; margin-bottom: 20px;'>AI Retention Hub</h1>", unsafe_allow_html=True)
 # --------------------------------------
 
 def render_metric(label, value, color, tooltip):
