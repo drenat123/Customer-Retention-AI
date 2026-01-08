@@ -68,12 +68,6 @@ st.markdown("""
         transform: translateY(-2px);
     }
 
-    div.stButton > button:active, div.stButton > button:focus {
-        background: rgba(0, 240, 255, 0.15) !important;
-        border-color: #00F0FF !important;
-        box-shadow: 0 0 25px rgba(0, 240, 255, 0.7) !important;
-    }
-
     .section-label { 
         color: #00F0FF; 
         font-size: 12px; 
@@ -85,7 +79,6 @@ st.markdown("""
         border-bottom: 1px solid rgba(0, 240, 255, 0.1);
     }
 
-    /* UPDATED FOR RESPONSIVE MOBILE VIEW */
     .metric-card { 
         background: rgba(15, 19, 26, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.05);
@@ -105,7 +98,7 @@ st.markdown("""
     }
 
     .live-insight {
-        font-size: 12px; 
+        font-size: 13px; 
         line-height: 1.5; 
         font-weight: 500;
         padding: 12px; 
@@ -137,7 +130,6 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-# UPDATED RENDER FUNCTION FOR CLEANER MOBILE LOOK
 def render_metric(label, value, color, insight_text):
     st.markdown(f"""
         <div class="metric-card">
@@ -155,8 +147,7 @@ def render_metric(label, value, color, insight_text):
 # 2. DATA ENGINE
 selected_niche = st.selectbox(
     "📂 Select Enterprise Database", 
-    ["Telecommunications", "Healthcare", "SaaS", "Banking"],
-    help="Toggle between industry silos to observe model adaptation to niche-specific churn drivers."
+    ["Telecommunications", "Healthcare", "SaaS", "Banking"]
 )
 
 if 'active_discount' not in st.session_state:
@@ -170,7 +161,7 @@ def get_industry_data(prefix):
     np.random.seed(42) 
     df['RiskScore'] = [f"{np.random.randint(10, 98)}%" for _ in range(len(df))]
     
-    # WHY FACTOR LOGIC
+    # "WHY" Factor Logic
     drivers = ["Low Account Balance", "Short Tenure", "Month-to-Month Contract", "High Usage Drop", "Competitive Pricing"]
     df['RiskFactor'] = [np.random.choice(drivers) for _ in range(len(df))]
     return df
@@ -199,10 +190,13 @@ if 'selected_id' not in st.session_state or st.session_state.selected_id not in 
 # 3. PRIORITY QUEUE
 st.markdown('<p class="section-label">01 // High-Risk Priority Queue</p>', unsafe_allow_html=True)
 display_df = base_df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'RiskScore']].copy()
+
+# This restores your "Select" logic perfectly
 display_df.insert(0, "Select", display_df['customerID'] == st.session_state.selected_id)
 display_df.columns = ['Select', 'Customer ID', 'Tenure (M)', 'MRR ($)', cfg['label'], 'AI Risk Score']
 edited_df = st.data_editor(display_df, hide_index=True, use_container_width=True, key=f"ed_{selected_niche}")
 
+# RESTORED: Only allows the LAST checked row to be active (Prevents multiple selections)
 checked_rows = edited_df[edited_df['Select'] == True]
 if not checked_rows.empty:
     new_id = checked_rows.iloc[-1]['Customer ID']
@@ -210,17 +204,18 @@ if not checked_rows.empty:
         st.session_state.selected_id = new_id
         st.rerun()
 
-# --- INDIVIDUAL RISK ANALYSIS (The "Why" Factor) ---
+# --- INDIVIDUAL RISK ANALYSIS ---
 target_id = st.session_state.selected_id
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
 st.markdown("---")
+# DIRECT & CLEAR DESCRIPTION
 render_metric(
     "INDIVIDUAL ANALYSIS", 
     selected_row['customerID'], 
     "#FFFFFF", 
-    f"<b>PRIMARY CHURN DRIVER:</b> {selected_row['RiskFactor']}<br>"
-    f"AI confirms a strong correlation between {selected_row['RiskFactor'].lower()} and churn probability for this profile."
+    f"<b>AI INSIGHT:</b> This user is likely to leave because of <b>{selected_row['RiskFactor'].lower()}</b>.<br><br>"
+    f"A <b>Retention Offer</b> is highly recommended to protect this revenue stream."
 )
 
 # 4. SIMULATION LAB
@@ -228,32 +223,14 @@ st.markdown(f'<p class="section-label">02 // Dynamic Simulation Lab: {target_id}
 c1, c2, c3 = st.columns(3)
 
 with c1:
-    tenure = st.number_input(
-        "Adjust Tenure (Months)", 1, 72, value=int(selected_row['tenure']),
-        help="Higher tenure generally decreases churn risk via the loyalty effect."
-    )
-    contract = st.selectbox(
-        f"Modify {cfg['label']}", opts["contracts"],
-        help="Long-term contracts act as primary retention anchors."
-    )
+    tenure = st.number_input("Adjust Tenure (Months)", 1, 72, value=int(selected_row['tenure']))
+    contract = st.selectbox(f"Modify {cfg['label']}", opts["contracts"])
 with c2:
-    monthly = st.number_input(
-        "Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']),
-        help="Monthly Recurring Revenue (MRR)."
-    )
-    service = st.selectbox(
-        opts["service_label"], opts["services"],
-        help="Specific product tier weighting."
-    )
+    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']))
+    service = st.selectbox(opts["service_label"], opts["services"])
 with c3:
-    has_support = st.checkbox(
-        opts["support_label"], value=True,
-        help="Active support reduces risk probability."
-    )
-    agent_priority = st.checkbox(
-        "Priority AI Routing", value=True,
-        help="Automatic routing to senior retention specialists."
-    )
+    has_support = st.checkbox(opts["support_label"], value=True)
+    agent_priority = st.checkbox("Priority AI Routing", value=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 b1, b2, b3, b4 = st.columns(4)
@@ -288,11 +265,11 @@ with m2:
 st.markdown('<p class="section-label">03 // Intelligence & Macro Projections</p>', unsafe_allow_html=True)
 x1, x2, x3 = st.columns(3)
 with x1:
-    render_metric(f"{cfg['label'].upper()} WEIGHT", "HIGH", "#00FFAB", "High commitment identified as a primary retention anchor.")
+    render_metric(f"{cfg['label'].upper()} WEIGHT", "HIGH", "#00FFAB", "Model identifies high commitment as a primary retention anchor.")
 with x2:
     render_metric("ANNUAL IMPACT", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}", "#00FFAB", f"Projected EBITDA impact across {cfg['scale']:,} accounts.")
 with x3:
-    render_metric("AI CONFIDENCE", f"{dyn_confidence:.1f}%", "#FFD700", "Statistical certainty score based on cross-validation.")
+    render_metric("AI CONFIDENCE", f"{dyn_confidence:.1f}%", "#FFD700", "Statistical certainty score based on historical cross-validation.")
 
 # 8. FOOTER
 st.markdown(f"""
