@@ -25,7 +25,7 @@ The following results were generated using the "Peak System" logic (Base Risk: 7
 | **False Positives** | 214 | Low "False Alarm" rate; minimizes resource waste. |
 | **False Negatives** | 166 | Minimal "Missed Churners"; maximizes revenue. |
 
-
+![Confusion Matrix](confusion_matrix.png)
 
 ---
 
