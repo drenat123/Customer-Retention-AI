@@ -161,13 +161,13 @@ def get_industry_data(prefix):
     np.random.seed(42) 
     df['RiskScore'] = [f"{np.random.randint(10, 98)}%" for _ in range(len(df))]
     
-    # ALIGNED DRIVERS: Matching the Lab Features
+    # IMPROVED LOGIC: Suggestions now trigger the user to CHANGE things
     drivers = {
-        "Low Account Balance": "Apply <b>Tier 1 (10%)</b> and switch to <b>Two Year</b> contract to lower monthly strain.",
-        "Short Tenure": "Apply <b>Tier 1 (10%)</b> and toggle <b>Priority AI Routing</b> to build loyalty.",
-        "Month-to-Month Contract": "Switch to <b>One Year</b> contract to anchor the user.",
-        "High Usage Drop": "Apply <b>Tier 2 (25%)</b> and enable <b>Tech Support</b> to re-engage user.",
-        "Competitive Pricing": "Apply <b>VIP (50%)</b> discount immediately to match competitor market rates."
+        "Low Account Balance": "Switch to <b>Two Year</b> contract to lower monthly strain.",
+        "Short Tenure": "Toggle <b>Priority AI Routing</b> to build brand loyalty.",
+        "Month-to-Month Contract": "Upgrade to a <b>One Year</b> contract to anchor the account.",
+        "High Usage Drop": "Enable <b>Tech Support</b> (or Success Manager) to re-engage user.",
+        "Competitive Pricing": "Apply <b>VIP (50%)</b> discount to outperform market competitors."
     }
     
     random_keys = list(drivers.keys())
@@ -204,6 +204,7 @@ display_df.insert(0, "Select", display_df['customerID'] == st.session_state.sele
 display_df.columns = ['Select', 'Customer ID', 'Tenure (M)', 'MRR ($)', cfg['label'], 'AI Risk Score']
 edited_df = st.data_editor(display_df, hide_index=True, use_container_width=True, key=f"ed_{selected_niche}")
 
+# ROBUST SELECTION LOCK
 checked_rows = edited_df[edited_df['Select'] == True]
 if not checked_rows.empty:
     new_id = checked_rows.iloc[-1]['Customer ID']
@@ -220,7 +221,7 @@ render_metric(
     "INDIVIDUAL ANALYSIS", 
     selected_row['customerID'], 
     "#FFFFFF", 
-    f"<b>AI INSIGHT:</b> This user is likely to leave because of <b>{selected_row['RiskFactor'].lower()}</b>.<br><br>"
+    f"<b>AI INSIGHT:</b> Likely churn due to <b>{selected_row['RiskFactor'].lower()}</b>.<br><br>"
     f"<b>AI SUGGESTS:</b> {selected_row['AISuggestion']}"
 )
 
@@ -230,13 +231,15 @@ c1, c2, c3 = st.columns(3)
 
 with c1:
     tenure = st.number_input("Adjust Tenure (Months)", 1, 72, value=int(selected_row['tenure']))
-    contract = st.selectbox(f"Modify {cfg['label']}", opts["contracts"])
+    # Start at original contract so user HAS to change it to see impact
+    contract = st.selectbox(f"Modify {cfg['label']}", opts["contracts"], index=opts["contracts"].index(selected_row['Contract']) if selected_row['Contract'] in opts["contracts"] else 0)
 with c2:
     monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']))
     service = st.selectbox(opts["service_label"], opts["services"])
 with c3:
-    has_support = st.checkbox(opts["support_label"], value=True)
-    agent_priority = st.checkbox("Priority AI Routing", value=True)
+    # FIXED: These now start as FALSE so the user can follow the AI's advice to "Toggle" them
+    has_support = st.checkbox(opts["support_label"], value=False)
+    agent_priority = st.checkbox("Priority AI Routing", value=False)
 
 st.markdown("<br>", unsafe_allow_html=True)
 b1, b2, b3, b4 = st.columns(4)
@@ -253,6 +256,7 @@ elif selected_niche == "SaaS": risk_multiplier = 0.1
 base_risk = 75 if "Month" in contract or "Basic" in contract or "Savings" in contract else 25
 if "Fiber" in str(service) or "Platinum" in str(service): base_risk += 12
 if not has_support: base_risk += 18
+if not agent_priority: base_risk += 5 # Added penalty for not using AI routing
 base_risk = max(5, min(95, base_risk - (tenure * risk_multiplier)))
 sim_risk = max(5, base_risk - (st.session_state.active_discount * 0.75))
 savings = ((base_risk/100) * (monthly * 24)) - ((sim_risk/100) * ((monthly * (1 - st.session_state.active_discount/100)) * 24))
@@ -271,7 +275,7 @@ with m2:
 st.markdown('<p class="section-label">03 // Intelligence & Macro Projections</p>', unsafe_allow_html=True)
 x1, x2, x3 = st.columns(3)
 with x1:
-    render_metric(f"{cfg['label'].upper()} WEIGHT", "HIGH", "#00FFAB", "Model identifies high commitment as a primary retention anchor.")
+    render_metric(f"{cfg['label'].upper()} WEIGHT", "HIGH", "#00FFAB", "Model identifies commitment level as a primary anchor.")
 with x2:
     render_metric("ANNUAL IMPACT", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}", "#00FFAB", f"Projected EBITDA impact across {cfg['scale']:,} accounts.")
 with x3:
