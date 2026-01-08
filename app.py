@@ -85,24 +85,33 @@ st.markdown("""
         border-bottom: 1px solid rgba(0, 240, 255, 0.1);
     }
 
+    /* UPDATED FOR RESPONSIVE MOBILE VIEW */
     .metric-card { 
         background: rgba(15, 19, 26, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 16px;
         padding: 24px;
         backdrop-filter: blur(10px);
-        min-height: 180px; 
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        gap: 12px;
     }
     
-    .metric-val { font-size: 42px; font-weight: 800; line-height: 1; margin: 0; }
+    .metric-val { 
+        font-size: clamp(28px, 5vw, 42px); 
+        font-weight: 800; 
+        line-height: 1.1; 
+        margin: 0; 
+    }
 
     .live-insight {
-        flex: 1; font-size: 11px; line-height: 1.4; font-weight: 500;
-        text-align: right; padding: 10px; border-radius: 8px;
-        background: rgba(0, 240, 255, 0.02); border-left: 2px solid rgba(0, 240, 255, 0.3);
+        font-size: 12px; 
+        line-height: 1.5; 
+        font-weight: 500;
+        padding: 12px; 
+        border-radius: 8px;
+        background: rgba(0, 240, 255, 0.03); 
+        border-left: 3px solid rgba(0, 240, 255, 0.4);
     }
 
     .footer-brand {
@@ -128,18 +137,17 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
+# UPDATED RENDER FUNCTION FOR CLEANER MOBILE LOOK
 def render_metric(label, value, color, insight_text):
     st.markdown(f"""
         <div class="metric-card">
-            <div style="display: flex; justify-content: space-between; color: #94A3B8; font-size: 13px; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; color: #94A3B8; font-size: 11px; font-weight: 700; text-transform: uppercase;">
                 <span>{label}</span>
-                <span style="opacity: 0.3; font-size: 9px;">AI INSIGHT ENGINE</span>
+                <span style="opacity: 0.3; font-size: 8px;">AI INSIGHT ENGINE</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
-                <div class="metric-val" style="color: {color};">{value}</div>
-                <div class="live-insight" style="color: rgba(0, 240, 255, 0.8);">
-                    {insight_text}
-                </div>
+            <div class="metric-val" style="color: {color};">{value}</div>
+            <div class="live-insight" style="color: rgba(255, 255, 255, 0.85);">
+                {insight_text}
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -162,7 +170,7 @@ def get_industry_data(prefix):
     np.random.seed(42) 
     df['RiskScore'] = [f"{np.random.randint(10, 98)}%" for _ in range(len(df))]
     
-    # ADDED LOGIC FOR THE "WHY" FACTOR
+    # WHY FACTOR LOGIC
     drivers = ["Low Account Balance", "Short Tenure", "Month-to-Month Contract", "High Usage Drop", "Competitive Pricing"]
     df['RiskFactor'] = [np.random.choice(drivers) for _ in range(len(df))]
     return df
@@ -202,17 +210,16 @@ if not checked_rows.empty:
         st.session_state.selected_id = new_id
         st.rerun()
 
-# 🛡️ NEW SECTION: INDIVIDUAL RISK ANALYSIS (The "Why" Factor)
+# --- INDIVIDUAL RISK ANALYSIS (The "Why" Factor) ---
 target_id = st.session_state.selected_id
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
 st.markdown("---")
-# This matches your metric card style but for specific individual analysis
 render_metric(
     "INDIVIDUAL ANALYSIS", 
     selected_row['customerID'], 
     "#FFFFFF", 
-    f"<b>PRIMARY CHURN DRIVER:</b> {selected_row['RiskFactor']}<br><br>"
+    f"<b>PRIMARY CHURN DRIVER:</b> {selected_row['RiskFactor']}<br>"
     f"AI confirms a strong correlation between {selected_row['RiskFactor'].lower()} and churn probability for this profile."
 )
 
@@ -223,29 +230,29 @@ c1, c2, c3 = st.columns(3)
 with c1:
     tenure = st.number_input(
         "Adjust Tenure (Months)", 1, 72, value=int(selected_row['tenure']),
-        help="The total duration of the customer relationship. Higher tenure generally decreases churn risk via the loyalty effect."
+        help="Higher tenure generally decreases churn risk via the loyalty effect."
     )
     contract = st.selectbox(
         f"Modify {cfg['label']}", opts["contracts"],
-        help="Contractual commitment levels. Long-term contracts act as primary retention anchors in the deterministic logic."
+        help="Long-term contracts act as primary retention anchors."
     )
 with c2:
     monthly = st.number_input(
         "Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']),
-        help="Monthly Recurring Revenue (MRR). This directly impacts the 'Revenue Saved' projection."
+        help="Monthly Recurring Revenue (MRR)."
     )
     service = st.selectbox(
         opts["service_label"], opts["services"],
-        help="Specific product tier. High-tier services (e.g., Fiber/Platinum) are weighted for specific market volatility."
+        help="Specific product tier weighting."
     )
 with c3:
     has_support = st.checkbox(
         opts["support_label"], value=True,
-        help="Active support access reduces risk probability scores by improving customer satisfaction scores."
+        help="Active support reduces risk probability."
     )
     agent_priority = st.checkbox(
         "Priority AI Routing", value=True,
-        help="Enabling this routes high-risk accounts to senior retention specialists automatically."
+        help="Automatic routing to senior retention specialists."
     )
 
 st.markdown("<br>", unsafe_allow_html=True)
@@ -255,12 +262,10 @@ with b2: st.button("Tier 1 (10%)", on_click=lambda: st.session_state.update({"ac
 with b3: st.button("Tier 2 (25%)", on_click=lambda: st.session_state.update({"active_discount": 25}), key="btn25")
 with b4: st.button("VIP (50%)", on_click=lambda: st.session_state.update({"active_discount": 50}), key="btn50")
 
-# --- VALIDATED LOGIC RECALIBRATION ---
+# --- CALIBRATION LOGIC ---
 risk_multiplier = 0.4 
-if selected_niche == "Banking": 
-    risk_multiplier = 0.8  # Stronger loyalty effect
-elif selected_niche == "SaaS": 
-    risk_multiplier = 0.1  # Weak loyalty effect
+if selected_niche == "Banking": risk_multiplier = 0.8
+elif selected_niche == "SaaS": risk_multiplier = 0.1
 
 base_risk = 75 if "Month" in contract or "Basic" in contract or "Savings" in contract else 25
 if "Fiber" in str(service) or "Platinum" in str(service): base_risk += 12
@@ -268,7 +273,6 @@ if not has_support: base_risk += 18
 base_risk = max(5, min(95, base_risk - (tenure * risk_multiplier)))
 sim_risk = max(5, base_risk - (st.session_state.active_discount * 0.75))
 savings = ((base_risk/100) * (monthly * 24)) - ((sim_risk/100) * ((monthly * (1 - st.session_state.active_discount/100)) * 24))
-
 dyn_confidence = 92.5 + (np.sin(tenure) * 2.4)
 
 # 5. DYNAMIC RESULTS
@@ -284,11 +288,11 @@ with m2:
 st.markdown('<p class="section-label">03 // Intelligence & Macro Projections</p>', unsafe_allow_html=True)
 x1, x2, x3 = st.columns(3)
 with x1:
-    render_metric(f"{cfg['label'].upper()} WEIGHT", "HIGH", "#00FFAB", "Model identifies high commitment as a primary retention anchor.")
+    render_metric(f"{cfg['label'].upper()} WEIGHT", "HIGH", "#00FFAB", "High commitment identified as a primary retention anchor.")
 with x2:
     render_metric("ANNUAL IMPACT", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}", "#00FFAB", f"Projected EBITDA impact across {cfg['scale']:,} accounts.")
 with x3:
-    render_metric("AI CONFIDENCE", f"{dyn_confidence:.1f}%", "#FFD700", "Statistical certainty score based on historical cross-validation.")
+    render_metric("AI CONFIDENCE", f"{dyn_confidence:.1f}%", "#FFD700", "Statistical certainty score based on cross-validation.")
 
 # 8. FOOTER
 st.markdown(f"""
