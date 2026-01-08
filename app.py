@@ -6,23 +6,22 @@ import numpy as np
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 FINAL AGGRESSIVE COLOR OVERRIDE
+# 🎨 UNIVERSAL BRUTE-FORCE COLOR OVERRIDE
 # ==========================================
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
     
-    /* Hide Header */
     header, [data-testid="stHeader"] { display: none !important; }
     
-    /* Global Background */
-    html, body, [st-emotion-cache] { 
+    html, body, [data-testid="stAppViewContainer"] { 
         background-color: #0B0E14 !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
 
-    /* THE FIX: Targeting the value divs by their position and forcing color */
-    /* This targets the actual number/text regardless of nesting */
-    [data-testid="stMetricValue"] > div {
+    /* THE BRUTE FORCE FIX */
+    /* This targets EVERY element (*) inside the metric value container */
+    [data-testid="stMetricValue"] * {
         font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: 48px !important;
         font-weight: 700 !important;
@@ -33,34 +32,28 @@ st.markdown("""
     div[data-testid="stMetric"]:has(label:contains("SAVINGS")) [data-testid="stMetricValue"] *,
     div[data-testid="stMetric"]:has(label:contains("🟢")) [data-testid="stMetricValue"] * {
         color: #00FFAB !important;
-        -webkit-text-fill-color: #00FFAB !important;
     }
 
     /* 🔴 RED: Critical Risk and Negative XAI */
     div[data-testid="stMetric"]:has(label:contains("CRITICAL")) [data-testid="stMetricValue"] *,
     div[data-testid="stMetric"]:has(label:contains("🔴")) [data-testid="stMetricValue"] * {
         color: #FF4D4D !important;
-        -webkit-text-fill-color: #FF4D4D !important;
     }
 
     /* 🔵 CYAN: Stable and Efficiency */
     div[data-testid="stMetric"]:has(label:contains("STABLE")) [data-testid="stMetricValue"] *,
     div[data-testid="stMetric"]:has(label:contains("EFFICIENCY")) [data-testid="stMetricValue"] * {
         color: #00F0FF !important;
-        -webkit-text-fill-color: #00F0FF !important;
     }
 
     /* 🟡 YELLOW: Confidence */
     div[data-testid="stMetric"]:has(label:contains("CONFIDENCE")) [data-testid="stMetricValue"] * {
         color: #FFD700 !important;
-        -webkit-text-fill-color: #FFD700 !important;
     }
 
-    /* Labels and Section styling */
     [data-testid="stMetricLabel"] { font-size: 14px !important; color: #94A3B8 !important; }
     .section-label { color: #00F0FF; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-top: 20px; }
-    
-    .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; height: 45px; }
+    .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; }
     </style>
     """, unsafe_allow_html=True)
 
