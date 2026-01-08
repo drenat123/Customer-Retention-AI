@@ -79,35 +79,22 @@ st.markdown("""
         border-bottom: 1px solid rgba(0, 240, 255, 0.1);
     }
 
-    /* UPDATED METRIC CARD FOR RESPONSIVENESS */
-    .metric-card { 
+    .analysis-card { 
         background: rgba(15, 19, 26, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 16px;
-        padding: 24px;
-        backdrop-filter: blur(10px);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        min-height: 160px;
-    }
-    
-    .metric-val { font-size: clamp(32px, 5vw, 42px); font-weight: 800; line-height: 1; margin: 0; }
-
-    .live-insight {
-        flex: 1; font-size: 12px; line-height: 1.5; font-weight: 500;
-        text-align: left; padding: 15px; border-radius: 8px;
-        background: rgba(0, 240, 255, 0.03); border-left: 3px solid rgba(0, 240, 255, 0.4);
+        border-radius: 20px;
+        padding: 30px;
+        backdrop-filter: blur(15px);
+        margin-bottom: 20px;
     }
 
-    .footer-brand {
-        text-align: center; margin-top: 100px; padding: 60px;
-        background: linear-gradient(to top, rgba(0, 240, 255, 0.03), transparent);
-    }
-    .footer-text {
-        font-size: 32px !important; font-weight: 800; letter-spacing: -1px;
-        background: linear-gradient(180deg, #FFFFFF 0%, #475569 100%);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    .insight-box {
+        margin-top: 20px;
+        padding: 20px;
+        border-radius: 12px;
+        background: rgba(0, 240, 255, 0.03);
+        border-left: 4px solid rgba(0, 240, 255, 0.5);
+        line-height: 1.6;
     }
 
     @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
@@ -123,27 +110,8 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-def render_metric(label, value, color, insight_text):
-    st.markdown(f"""
-        <div class="metric-card">
-            <div style="display: flex; justify-content: space-between; color: #94A3B8; font-size: 13px; font-weight: 700; text-transform: uppercase; margin-bottom: 15px;">
-                <span>{label}</span>
-                <span style="opacity: 0.3; font-size: 9px;">AI INSIGHT ENGINE</span>
-            </div>
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px;">
-                <div class="metric-val" style="color: {color};">{value}</div>
-                <div class="live-insight" style="color: rgba(255, 255, 255, 0.9);">
-                    {insight_text}
-                </div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
 # 2. DATA ENGINE
-selected_niche = st.selectbox(
-    "📂 Select Enterprise Database", 
-    ["Telecommunications", "Healthcare", "SaaS", "Banking"]
-)
+selected_niche = st.selectbox("📂 Select Enterprise Database", ["Telecommunications", "Healthcare", "SaaS", "Banking"])
 
 if 'active_discount' not in st.session_state:
     st.session_state.active_discount = 0
@@ -164,11 +132,24 @@ n_cfg = {
     "Banking": {"scale": 150000, "label": "Account Type", "prefix": "BANK"}
 }
 
+# In-depth professional reasons
 industry_options = {
-    "Telecommunications": {"contracts": ["Month-to-month", "One year", "Two year"], "service_label": "Internet Service", "services": ["Fiber optic", "DSL", "No"], "support_label": "Tech Support", "reason": "high competitor density and month-to-month contract strain."},
-    "Healthcare": {"contracts": ["Basic Plan", "Family Cover", "Enterprise/VIP"], "service_label": "Insurance Tier", "services": ["Public", "Private", "International"], "support_label": "Telemedicine Access", "reason": "lack of specialized care coverage and low platform engagement."},
-    "SaaS": {"contracts": ["Monthly Subscription", "Annual (Standard)", "Multi-Year (Enterprise)"], "service_label": "Infrastructure", "services": ["Shared Cloud", "Dedicated Instance", "On-Premise"], "support_label": "Success Manager", "reason": "underutilization of enterprise features and upcoming renewal friction."},
-    "Banking": {"contracts": ["Savings Account", "Current Account", "Investment Portfolio"], "service_label": "Credit Tier", "services": ["Standard", "Gold/Silver", "Platinum/Private"], "support_label": "Personal Banker", "reason": "low asset-to-debt ratio and interest rate sensitivity."}
+    "Telecommunications": {
+        "contracts": ["Month-to-month", "One year", "Two year"], "service_label": "Internet Service", "services": ["Fiber optic", "DSL", "No"], "support_label": "Tech Support",
+        "reason": "Likely churn due to a sudden, significant drop in platform usage and approaching contract renewal. Model indicates a strong risk correlation with recent competitive fiber-optic pricing in the sector."
+    },
+    "Healthcare": {
+        "contracts": ["Basic Plan", "Family Cover", "Enterprise/VIP"], "service_label": "Insurance Tier", "services": ["Public", "Private", "International"], "support_label": "Telemedicine Access",
+        "reason": "Risk detected based on low telemedicine engagement and plan misalignment. Patient profile suggests a high probability of migrating to providers with more specialized bulk-subsidy networks."
+    },
+    "SaaS": {
+        "contracts": ["Monthly Subscription", "Annual (Standard)", "Multi-Year (Enterprise)"], "service_label": "Infrastructure", "services": ["Shared Cloud", "Dedicated Instance", "On-Premise"], "support_label": "Success Manager",
+        "reason": "Churn signature identified through underutilization of premium API features and frequent support ticket escalations. Predicts a high friction point during the upcoming Q3 renewal cycle."
+    },
+    "Banking": {
+        "contracts": ["Savings Account", "Current Account", "Investment Portfolio"], "service_label": "Credit Tier", "services": ["Standard", "Gold/Silver", "Platinum/Private"], "support_label": "Personal Banker",
+        "reason": "Risk elevated due to declining asset-to-debt ratios and interest rate sensitivity. Behavioral analytics suggest capital flight risk toward high-yield investment competitors."
+    }
 }
 
 cfg = n_cfg[selected_niche]
@@ -192,16 +173,25 @@ if not checked_rows.empty:
         st.session_state.selected_id = new_id
         st.rerun()
 
-# --- SURGICAL REASONING UPDATE ---
+# --- SURGICAL UPDATE: MATCHING IMAGE REFERENCE ---
 target_id = st.session_state.selected_id
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
-render_metric(
-    "CHURN REASONING", 
-    "PREDICTIVE", 
-    "#FFFFFF", 
-    f"Model indicates <b>{target_id}</b> is likely to churn due to <b>{opts['reason']}</b> Analysis suggests immediate intervention via loyalty lock-ins."
-)
+st.markdown(f"""
+    <div class="analysis-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="color: #94A3B8; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Individual Analysis</span>
+            <span style="color: #64748B; font-size: 10px; font-weight: 800; text-transform: uppercase;">AI Insight Engine</span>
+        </div>
+        <div style="font-size: clamp(34px, 5vw, 48px); font-weight: 800; color: #FFD700; letter-spacing: -1px; margin-bottom: 20px;">
+            {target_id}
+        </div>
+        <div class="insight-box">
+            <span style="color: #00F0FF; font-weight: 800; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; margin-right: 10px;">AI Insight:</span>
+            <span style="color: #E2E8F0; font-size: 14px; font-weight: 500;">{opts['reason']}</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # 4. SIMULATION LAB
 st.markdown(f'<p class="section-label">02 // Dynamic Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
@@ -224,7 +214,7 @@ with b2: st.button("Tier 1 (10%)", on_click=lambda: st.session_state.update({"ac
 with b3: st.button("Tier 2 (25%)", on_click=lambda: st.session_state.update({"active_discount": 25}), key="btn25")
 with b4: st.button("VIP (50%)", on_click=lambda: st.session_state.update({"active_discount": 50}), key="btn50")
 
-# Logic
+# Logic (sacred)
 risk_multiplier = 0.4 if selected_niche != "Banking" else 0.8
 base_risk = 75 if "Month" in contract or "Basic" in contract or "Savings" in contract else 25
 if "Fiber" in str(service) or "Platinum" in str(service): base_risk += 12
@@ -234,24 +224,33 @@ sim_risk = max(5, base_risk - (st.session_state.active_discount * 0.75))
 savings = ((base_risk/100) * (monthly * 24)) - ((sim_risk/100) * ((monthly * (1 - st.session_state.active_discount/100)) * 24))
 dyn_confidence = 92.5 + (np.sin(tenure) * 2.4)
 
+def render_metric_small(label, value, color, insight):
+    st.markdown(f"""
+        <div style="background: rgba(15, 19, 26, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 20px; min-height: 140px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="color: #94A3B8; font-size: 11px; font-weight: 700; text-transform: uppercase;">{label}</div>
+            <div style="color: {color}; font-size: 32px; font-weight: 800;">{value}</div>
+            <div style="color: #64748B; font-size: 11px; line-height: 1.2;">{insight}</div>
+        </div>
+    """, unsafe_allow_html=True)
+
 # 5. DYNAMIC RESULTS
 st.markdown("---")
 m1, m2 = st.columns(2)
 with m1:
     col = "#FF4D4D" if sim_risk > 35 else "#00F0FF"
-    render_metric("CHURN RISK", f"{sim_risk:.1f}%", col, f"AI-calibrated risk for {selected_niche}. Validated at 87.7% precision.")
+    render_metric_small("CHURN RISK", f"{sim_risk:.1f}%", col, f"AI-calibrated risk for {selected_niche}.")
 with m2:
-    render_metric("REVENUE SAVED", f"+${savings:,.2f}", "#00FFAB", "Projected total revenue preserved over a 24-month lifecycle.")
+    render_metric_small("REVENUE SAVED", f"+${savings:,.2f}", "#00FFAB", "Projected revenue preserved (24-mo).")
 
 # 6. MACRO IMPACT
 st.markdown('<p class="section-label">03 // Intelligence & Macro Projections</p>', unsafe_allow_html=True)
 x1, x2, x3 = st.columns(3)
 with x1:
-    render_metric(f"{cfg['label'].upper()} WEIGHT", "HIGH", "#00FFAB", "Model identifies high commitment as a primary retention anchor.")
+    render_metric_small(f"{cfg['label'].upper()} WEIGHT", "HIGH", "#00FFAB", "Primary retention anchor identified.")
 with x2:
-    render_metric("ANNUAL IMPACT", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}", "#00FFAB", f"Projected EBITDA impact across {cfg['scale']:,} accounts.")
+    render_metric_small("ANNUAL IMPACT", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}", "#00FFAB", f"Impact across {cfg['scale']:,} accounts.")
 with x3:
-    render_metric("AI CONFIDENCE", f"{dyn_confidence:.1f}%", "#FFD700", "Statistical certainty score based on historical cross-validation.")
+    render_metric_small("AI CONFIDENCE", f"{dyn_confidence:.1f}%", "#FFD700", "Statistical certainty score.")
 
 # 8. FOOTER
 st.markdown(f"""
