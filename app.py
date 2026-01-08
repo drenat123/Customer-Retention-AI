@@ -32,7 +32,7 @@ st.markdown("""
         animation: float 4s infinite ease-in-out;
     }
     .main-title {
-        font-size: 84px !important;
+        font-size: 57px !important;
         font-weight: 800 !important;
         letter-spacing: -4px !important;
         background: linear-gradient(180deg, #FFFFFF 0%, #64748B 100%);
