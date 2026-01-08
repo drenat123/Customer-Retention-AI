@@ -6,7 +6,7 @@ import numpy as np
 st.set_page_config(page_title="AEGIS Retention AI", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 LOCKED FINAL UI - ULTRA-MODERN GLASS
+# 🎨 UI STYLING
 # ==========================================
 st.markdown("""
     <style>
@@ -71,41 +71,14 @@ st.markdown("""
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        transition: all 0.3s ease;
     }
-    .metric-card:hover { border-color: rgba(0, 240, 255, 0.3); transform: translateY(-2px); }
     
-    .metric-header {
-        display: flex; align-items: center; justify-content: space-between;
-        color: #94A3B8; font-size: 13px; font-weight: 700; 
-        text-transform: uppercase; margin-bottom: 10px;
-    }
-
-    .metric-main-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .metric-val { font-size: 42px; font-weight: 800; line-height: 1; margin: 0; white-space: nowrap; }
+    .metric-val { font-size: 42px; font-weight: 800; line-height: 1; margin: 0; }
 
     .live-insight {
-        flex: 1;
-        font-size: 11px;
-        line-height: 1.4;
-        font-weight: 500;
-        text-align: right;
-        padding: 10px;
-        border-radius: 8px;
-        background: rgba(0, 240, 255, 0.02);
-        border-left: 2px solid rgba(0, 240, 255, 0.3);
-    }
-
-    .confidence-glow {
-        color: #FFD700 !important;
-        text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-        border-bottom: 2px solid #FFD700;
+        flex: 1; font-size: 11px; line-height: 1.4; font-weight: 500;
+        text-align: right; padding: 10px; border-radius: 8px;
+        background: rgba(0, 240, 255, 0.02); border-left: 2px solid rgba(0, 240, 255, 0.3);
     }
 
     .footer-brand {
@@ -113,12 +86,9 @@ st.markdown("""
         background: linear-gradient(to top, rgba(0, 240, 255, 0.03), transparent);
     }
     .footer-text {
-        font-size: 32px !important;
-        font-weight: 800;
-        letter-spacing: -1px;
+        font-size: 32px !important; font-weight: 800; letter-spacing: -1px;
         background: linear-gradient(180deg, #FFFFFF 0%, #475569 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
 
     @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
@@ -135,18 +105,15 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 def render_metric(label, value, color, insight_text, is_confidence=False):
-    val_class = "metric-val confidence-glow" if is_confidence else "metric-val"
-    insight_style = "color: rgba(255, 215, 0, 0.8); border-left-color: #FFD700;" if is_confidence else "color: rgba(0, 240, 255, 0.8);"
-    
     st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-header">
+            <div style="display: flex; justify-content: space-between; color: #94A3B8; font-size: 13px; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">
                 <span>{label}</span>
-                <span style="opacity: 0.3; font-size: 9px; letter-spacing: 1px;">AI INSIGHT ENGINE</span>
+                <span style="opacity: 0.3; font-size: 9px;">AI INSIGHT ENGINE</span>
             </div>
-            <div class="metric-main-row">
-                <div class="{val_class}" style="color: {color};">{value}</div>
-                <div class="live-insight" style="{insight_style}">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+                <div class="metric-val" style="color: {color};">{value}</div>
+                <div class="live-insight" style="color: rgba(0, 240, 255, 0.8);">
                     {insight_text}
                 </div>
             </div>
@@ -154,8 +121,13 @@ def render_metric(label, value, color, insight_text, is_confidence=False):
     """, unsafe_allow_html=True)
 
 # 2. DATA ENGINE
-selected_niche = st.selectbox("📂 Select Enterprise Database", ["Telecommunications", "Healthcare", "SaaS", "Banking"])
+selected_niche = st.selectbox(
+    "📂 Select Enterprise Database", 
+    ["Telecommunications", "Healthcare", "SaaS", "Banking"],
+    help="Switch between different industry datasets to see how the AI adapts to specific churn drivers."
+)
 
+# Industry Dictionaries
 industry_options = {
     "Telecommunications": {
         "contracts": ["Month-to-month", "One year", "Two year"],
@@ -203,12 +175,9 @@ def get_industry_data(prefix):
 
 base_df = get_industry_data(cfg['prefix'])
 
-# 🛡️ THE FIX: Check if the ID exists in the current database. If not, pick the first one.
+# --- 🛡️ THE SAFE RESET ---
 if 'selected_id' not in st.session_state or st.session_state.selected_id not in base_df['customerID'].values:
     st.session_state.selected_id = base_df.iloc[0]['customerID']
-
-if 'active_discount' not in st.session_state:
-    st.session_state.active_discount = 0
 
 # 3. PRIORITY QUEUE
 st.markdown('<p class="section-label">01 // High-Risk Priority Queue</p>', unsafe_allow_html=True)
@@ -224,23 +193,22 @@ if not checked_rows.empty:
         st.session_state.selected_id = new_id
         st.rerun()
 
-# 4. DYNAMIC SIMULATION LAB
+# 4. SIMULATION LAB (WITH TOOLTIPS)
 target_id = st.session_state.selected_id
-# This line is now safe because of the check we added above
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
 st.markdown(f'<p class="section-label">02 // Dynamic Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
 
 with c1:
-    tenure = st.number_input("Adjust Tenure (Months)", 1, 72, value=int(selected_row['tenure']))
-    contract = st.selectbox(f"Modify {cfg['label']}", opts["contracts"])
+    tenure = st.number_input("Adjust Tenure (Months)", 1, 72, value=int(selected_row['tenure']), help="Increase tenure to simulate long-term customer loyalty impacts.")
+    contract = st.selectbox(f"Modify {cfg['label']}", opts["contracts"], help=f"Adjust the {cfg['label']} to see how commitment levels reduce churn risk.")
 with c2:
-    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']))
-    service = st.selectbox(opts["service_label"], opts["services"])
+    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="Simulate MRR changes and their impact on revenue preservation.")
+    service = st.selectbox(opts["service_label"], opts["services"], help=f"Change the {opts['service_label']} to evaluate infrastructure-related risk.")
 with c3:
-    has_support = st.checkbox(opts["support_label"], value=True)
-    agent_priority = st.checkbox("Priority AI Routing", value=True)
+    has_support = st.checkbox(opts["support_label"], value=True, help=f"Toggling {opts['support_label']} simulates the impact of direct customer assistance.")
+    agent_priority = st.checkbox("Priority AI Routing", value=True, help="AI-driven routing for high-value customers at risk.")
 
 st.markdown("<br>", unsafe_allow_html=True)
 b1, b2, b3, b4 = st.columns(4)
@@ -262,25 +230,25 @@ st.markdown("---")
 m1, m2 = st.columns(2)
 with m1:
     col = "#FF4D4D" if sim_risk > 35 else "#00F0FF"
-    render_metric("CHURN RISK", f"{sim_risk:.1f}%", col, f"Validated v2.0 AI prediction for {selected_niche}. High-risk detected based on current {opts['service_label']} usage.")
+    render_metric("CHURN RISK", f"{sim_risk:.1f}%", col, f"Validated v2.1 prediction. {opts['service_label']} and commitment type remain primary risk variables.")
 with m2:
-    render_metric("REVENUE SAVED", f"+${savings:,.2f}", "#00FFAB", "Projected 24-month revenue preservation. This simulates the financial impact of your retention offer.")
+    render_metric("REVENUE SAVED", f"+${savings:,.2f}", "#00FFAB", "Projected revenue preservation over a 24-month horizon.")
 
 # 6. XAI & MACRO
 st.markdown('<p class="section-label">03 // Intelligence & Macro Projections</p>', unsafe_allow_html=True)
 x1, x2, x3 = st.columns(3)
 with x1:
-    render_metric(f"{cfg['label'].upper()} WEIGHT", "HIGH", "#00FFAB", f"The v2.0 model identifies {cfg['label']} as the #1 stability anchor across the {selected_niche} sector.")
+    render_metric(f"{cfg['label'].upper()} WEIGHT", "HIGH", "#00FFAB", f"Model identifies {cfg['label']} as a critical anchor for retention.")
 with x2:
-    render_metric("ANNUAL IMPACT", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}", "#00FFAB", f"Potential EBITDA impact if this XGBoost strategy is scaled to all {cfg['scale']} accounts.")
+    render_metric("ANNUAL IMPACT", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}", "#00FFAB", f"Scaled EBITDA impact across {cfg['scale']} enterprise accounts.")
 with x3:
-    render_metric("AI CONFIDENCE", "94.2%", "#FFD700", "Real-time statistical certainty ensuring the recommendation is robust against industry market shifts.", is_confidence=True)
+    render_metric("AI CONFIDENCE", "94.2%", "#FFD700", "Inference reliability based on historical industry variance.")
 
 # 8. FOOTER
 st.markdown(f"""
     <div class="footer-brand">
         <p style="color: #64748B; font-size: 13px; text-transform: uppercase; letter-spacing: 3px; font-weight: 700; margin-bottom: 10px;">Engineering & Design by</p>
         <h2 class="footer-text">DRENAT NALLBANI</h2>
-        <div style="width: 80px; height: 2px; background: #00F0FF; margin: 15px auto; box-shadow: 0 0 10px #00F0FF;"></div>
+        <div style="width: 80px; height: 2px; background: #00F0FF; margin: 15px auto;"></div>
     </div>
     """, unsafe_allow_html=True)
