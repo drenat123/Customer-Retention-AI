@@ -6,55 +6,34 @@ import numpy as np
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 UNIVERSAL BRUTE-FORCE COLOR OVERRIDE
+# 🎨 CSS FOR LAYOUT & FONTS
 # ==========================================
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
-    
     header, [data-testid="stHeader"] { display: none !important; }
-    
     html, body, [data-testid="stAppViewContainer"] { 
         background-color: #0B0E14 !important;
         font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
-
-    /* THE BRUTE FORCE FIX */
-    /* This targets EVERY element (*) inside the metric value container */
-    [data-testid="stMetricValue"] * {
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-        font-size: 48px !important;
-        font-weight: 700 !important;
-    }
-
-    /* 🟢 GREEN: Safeguarded, Savings, and Positive XAI */
-    div[data-testid="stMetric"]:has(label:contains("SAFEGUARDED")) [data-testid="stMetricValue"] *,
-    div[data-testid="stMetric"]:has(label:contains("SAVINGS")) [data-testid="stMetricValue"] *,
-    div[data-testid="stMetric"]:has(label:contains("🟢")) [data-testid="stMetricValue"] * {
-        color: #00FFAB !important;
-    }
-
-    /* 🔴 RED: Critical Risk and Negative XAI */
-    div[data-testid="stMetric"]:has(label:contains("CRITICAL")) [data-testid="stMetricValue"] *,
-    div[data-testid="stMetric"]:has(label:contains("🔴")) [data-testid="stMetricValue"] * {
-        color: #FF4D4D !important;
-    }
-
-    /* 🔵 CYAN: Stable and Efficiency */
-    div[data-testid="stMetric"]:has(label:contains("STABLE")) [data-testid="stMetricValue"] *,
-    div[data-testid="stMetric"]:has(label:contains("EFFICIENCY")) [data-testid="stMetricValue"] * {
-        color: #00F0FF !important;
-    }
-
-    /* 🟡 YELLOW: Confidence */
-    div[data-testid="stMetric"]:has(label:contains("CONFIDENCE")) [data-testid="stMetricValue"] * {
-        color: #FFD700 !important;
-    }
-
-    [data-testid="stMetricLabel"] { font-size: 14px !important; color: #94A3B8 !important; }
-    .section-label { color: #00F0FF; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-top: 20px; }
+    .section-label { color: #00F0FF; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-top: 20px; margin-bottom: 10px; }
+    
+    /* Custom Metric Styling to match your screenshot */
+    .metric-container { text-align: center; padding: 10px; }
+    .metric-label { font-size: 14px; color: #94A3B8; text-transform: uppercase; margin-bottom: 4px; }
+    .metric-value { font-size: 48px; font-weight: 700; }
+    
     .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; }
     </style>
+    """, unsafe_allow_html=True)
+
+# 🛠️ CUSTOM METRIC FUNCTION (The Fix)
+def custom_metric(label, value, color, help_text=""):
+    st.markdown(f"""
+        <div class="metric-container">
+            <div class="metric-label" title="{help_text}">{label}</div>
+            <div class="metric-value" style="color: {color} !important;">{value}</div>
+        </div>
     """, unsafe_allow_html=True)
 
 # 2. DATA & INDUSTRY CONFIG
@@ -78,7 +57,7 @@ def get_industry_data(prefix):
 
 base_df = get_industry_data(cfg['prefix'])
 
-if 'selected_id' not in st.session_state or not st.session_state.selected_id.startswith(cfg['prefix']):
+if 'selected_id' not in st.session_state:
     st.session_state.selected_id = base_df.iloc[0]['customerID']
 if 'active_discount' not in st.session_state:
     st.session_state.active_discount = 0
@@ -117,6 +96,7 @@ with b2: st.button("10% Off", on_click=lambda: st.session_state.update({"active_
 with b3: st.button("25% Off", on_click=lambda: st.session_state.update({"active_discount": 25}))
 with b4: st.button("50% VIP", on_click=lambda: st.session_state.update({"active_discount": 50}))
 
+# Simulation Logic
 base_risk = 35 if contract == "Standard" else 10
 if not has_support: base_risk += 15
 base_risk = max(5, min(95, base_risk - (tenure * 0.3)))
@@ -127,28 +107,35 @@ savings = ((base_risk/100) * (monthly * 24)) - ((sim_risk/100) * ((monthly * (1 
 st.markdown("---")
 m1, m2 = st.columns(2)
 with m1:
-    status_label = "🔴 CRITICAL RISK" if sim_risk > 30 else "🔵 STABLE RISK"
-    st.metric(status_label, f"{sim_risk:.1f}%", help="Predicted churn probability.")
+    color = "#FF4D4D" if sim_risk > 30 else "#00F0FF"
+    label = "🔴 CRITICAL RISK" if sim_risk > 30 else "🔵 STABLE RISK"
+    custom_metric(label, f"{sim_risk:.1f}%", color, "Predicted churn probability.")
 with m2:
-    st.metric("🟢 REVENUE SAFEGUARDED", f"+${savings:,.2f}", help="Total amount protected.")
+    custom_metric("🟢 REVENUE SAFEGUARDED", f"+${savings:,.2f}", "#00FFAB", "Total amount protected.")
 
 # 6. SECTION 3: XAI
 st.markdown("---")
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 x1, x2 = st.columns(2)
 with x1:
-    impact_emoji = "🔴" if contract == "Standard" else "🟢"
-    st.metric(f"{impact_emoji} {cfg['label']} IMPACT", "High" if contract == "Standard" else "Low", help="Correlation to churn.")
+    val = "High" if contract == "Standard" else "Low"
+    col = "#FF4D4D" if val == "High" else "#00FFAB"
+    custom_metric(f"🔴 {cfg['label']} IMPACT", val, col, "Correlation to churn.")
 with x2:
-    sup_emoji = "🔴" if not has_support else "🟢"
-    st.metric(f"{sup_emoji} SUPPORT IMPACT", "High" if not has_support else "Low", help="Impact of priority support.")
+    val = "High" if not has_support else "Low"
+    col = "#FF4D4D" if val == "High" else "#00FFAB"
+    custom_metric(f"🟢 SUPPORT IMPACT", val, col, "Impact of priority support.")
 
 # 7. SECTION 4: MACRO IMPACT
 st.markdown("---")
 st.markdown('<p class="section-label">4. Macro Business Impact Projection</p>', unsafe_allow_html=True)
 bi1, bi2, bi3 = st.columns(3)
-with bi1: st.metric("🟢 ANNUAL SAVINGS", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}", help="Projected yearly recovery.")
-with bi2: st.metric("🔵 EFFICIENCY", "91%", help="Model accuracy rate.")
-with bi3: st.metric("🟡 CONFIDENCE", "94.2%", help="AI confidence.")
+with bi1: 
+    annual = (savings * 12 * (cfg['scale']/100))
+    custom_metric("🟢 ANNUAL SAVINGS", f"+${annual:,.0f}", "#00FFAB", "Projected yearly recovery.")
+with bi2: 
+    custom_metric("🔵 EFFICIENCY", "91%", "#00F0FF", "Model accuracy rate.")
+with bi3: 
+    custom_metric("🟡 CONFIDENCE", "94.2%", "#FFD700", "AI confidence.")
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani</p>", unsafe_allow_html=True)
