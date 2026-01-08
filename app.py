@@ -6,7 +6,7 @@ import numpy as np
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 LOCKED UI - DO NOT ALTER
+# 🎨 LOCKED UI - PERMANENT COLOR FIX
 # ==========================================
 st.markdown("""
     <style>
@@ -30,7 +30,6 @@ st.markdown("""
         margin-bottom: 15px; 
     }
 
-    /* BUTTONS: Solid, Highlighted, and Clickable */
     .stButton > button {
         width: 100% !important;
         background-color: #161B22 !important;
@@ -49,7 +48,6 @@ st.markdown("""
         box-shadow: 0 0 10px rgba(0, 240, 255, 0.2) !important;
     }
 
-    /* CUSTOM HTML METRICS: Zero-risk Color Locking */
     .metric-card { text-align: left; padding: 10px 0; }
     .metric-header {
         display: flex; align-items: center; gap: 6px;
@@ -63,7 +61,6 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 🛠️ HELPER: CUSTOM METRIC COMPONENT
 def render_metric(label, value, color, tooltip):
     st.markdown(f"""
         <div class="metric-card">
@@ -96,7 +93,6 @@ def get_industry_data(prefix):
 
 base_df = get_industry_data(cfg['prefix'])
 
-# Error Prevention for industry switching
 if 'selected_id' not in st.session_state or st.session_state.selected_id not in base_df['customerID'].values:
     st.session_state.selected_id = base_df.iloc[0]['customerID']
 if 'active_discount' not in st.session_state:
@@ -123,13 +119,12 @@ selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 st.markdown(f'<p class="section-label">2. Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
 c1, c2 = st.columns(2)
 with c1:
-    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']), help="The length of time the customer has been with the company. Longer tenure typically reduces the probability of churn.")
-    contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"], help="The tier of service the customer is currently on. Higher tiers often correlate with better retention.")
+    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']), help="Customer's loyalty duration. Higher tenure usually lowers churn risk.")
+    contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"], help="Current service tier. Higher tiers are better for retention.")
 with c2:
-    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="The recurring monthly revenue from this customer. High-value customers are high priority for retention.")
-    has_support = st.checkbox("Simulate Priority Support?", value=True, help="Enabling priority support simulates the impact of a dedicated agent or faster response times on customer satisfaction.")
+    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="Monthly recurring revenue. High-value accounts are prioritized.")
+    has_support = st.checkbox("Simulate Priority Support?", value=True, help="Simulate the impact of a dedicated agent on customer retention.")
 
-# BUTTONS
 st.markdown("<br>", unsafe_allow_html=True)
 b1, b2, b3, b4 = st.columns(4)
 with b1: st.button("No Offer", on_click=lambda: st.session_state.update({"active_discount": 0}), key="btn0")
@@ -150,22 +145,24 @@ m1, m2 = st.columns(2)
 with m1:
     col = "#FF4D4D" if sim_risk > 30 else "#00F0FF"
     lab = "🔴 CRITICAL RISK" if sim_risk > 30 else "🔵 STABLE RISK"
-    render_metric(lab, f"{sim_risk:.1f}%", col, "The AI's predicted probability of this customer churning based on current simulation variables.")
+    render_metric(lab, f"{sim_risk:.1f}%", col, "AI's predicted probability of this customer churning based on current variables.")
 with m2:
-    render_metric("🟢 REVENUE SAFEGUARDED", f"+${savings:,.2f}", "#00FFAB", "The estimated dollar value of revenue protected by implementing this retention strategy over 24 months.")
+    render_metric("🟢 REVENUE SAFEGUARDED", f"+${savings:,.2f}", "#00FFAB", "Estimated dollar value of revenue protected by this strategy over 24 months.")
 
-# 6. SECTION 3: XAI
+# 6. SECTION 3: XAI (REVERSED COLORS APPLIED HERE)
 st.markdown("---")
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 x1, x2 = st.columns(2)
 with x1:
-    v = "High" if contract == "Standard" else "Low"
-    c = "#FF4D4D" if v == "High" else "#00FFAB"
-    render_metric(f"🔴 {cfg['label']} IMPACT", v, c, f"Shows how much the {cfg['label']} is currently driving the churn risk for this specific user profile.")
+    # High impact from Contract = Good (Green)
+    val = "High" if contract != "Standard" else "Low"
+    col = "#00FFAB" if val == "High" else "#FF4D4D"
+    render_metric(f"{cfg['label']} IMPACT", val, col, f"Measures how much the {cfg['label']} acts as a retention anchor. High impact is a positive sign for loyalty.")
 with x2:
-    v = "High" if not has_support else "Low"
-    c = "#FF4D4D" if v == "High" else "#00FFAB"
-    render_metric("🟢 SUPPORT IMPACT", v, c, "Indicates the degree to which support tier access (or lack thereof) influences this customer's likelihood to stay.")
+    # Low impact from Support = Bad (Red)
+    val = "High" if has_support else "Low"
+    col = "#00FFAB" if val == "High" else "#FF4D4D"
+    render_metric("SUPPORT IMPACT", val, col, "Evaluates the weight of support engagement. Low impact indicates a lack of engagement, which increases churn risk.")
 
 # 7. SECTION 4: MACRO IMPACT
 st.markdown("---")
@@ -173,10 +170,10 @@ st.markdown('<p class="section-label">4. Macro Business Impact Projection</p>', 
 bi1, bi2, bi3 = st.columns(3)
 with bi1: 
     ann = (savings * 12 * (cfg['scale']/100))
-    render_metric("🟢 ANNUAL SAVINGS", f"+${ann:,.0f}", "#00FFAB", "The projected yearly savings if the current retention logic were applied across your entire customer database.")
+    render_metric("🟢 ANNUAL SAVINGS", f"+${ann:,.0f}", "#00FFAB", "Projected yearly savings if this retention logic were applied globally.")
 with bi2: 
-    render_metric("🔵 EFFICIENCY", "91%", "#00F0FF", "Historical accuracy of the churn model. A 91% rating means the model is highly reliable for proactive intervention.")
+    render_metric("🔵 EFFICIENCY", "91%", "#00F0FF", "Historical accuracy of the churn model.")
 with bi3: 
-    render_metric("🟡 CONFIDENCE", "94.2%", "#FFD700", "The statistical confidence level the AI has in this specific prediction based on data density and pattern matching.")
+    render_metric("🟡 CONFIDENCE", "94.2%", "#FFD700", "AI confidence level in this specific prediction.")
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani</p>", unsafe_allow_html=True)
