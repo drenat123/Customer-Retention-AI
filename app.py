@@ -171,10 +171,10 @@ n_cfg = {
 }
 
 industry_options = {
-    "Telecommunications": {"contracts": ["Month-to-month", "One year", "Two year"], "service_label": "Internet Service", "services": ["Fiber optic", "DSL", "No"], "support_label": "Tech Support"},
-    "Healthcare": {"contracts": ["Basic Plan", "Family Cover", "Enterprise/VIP"], "service_label": "Insurance Tier", "services": ["Public", "Private", "International"], "support_label": "Telemedicine Access"},
-    "SaaS": {"contracts": ["Monthly Subscription", "Annual (Standard)", "Multi-Year (Enterprise)"], "service_label": "Infrastructure", "services": ["Shared Cloud", "Dedicated Instance", "On-Premise"], "support_label": "Success Manager"},
-    "Banking": {"contracts": ["Savings Account", "Current Account", "Investment Portfolio"], "service_label": "Credit Tier", "services": ["Standard", "Gold/Silver", "Platinum/Private"], "support_label": "Personal Banker"}
+    "Telecommunications": {"contracts": ["Month-to-month", "One year", "Two year"], "service_label": "Internet Service", "services": ["Fiber optic", "DSL", "No"], "support_label": "Tech Support", "reason": "high competitor density and month-to-month contract strain."},
+    "Healthcare": {"contracts": ["Basic Plan", "Family Cover", "Enterprise/VIP"], "service_label": "Insurance Tier", "services": ["Public", "Private", "International"], "support_label": "Telemedicine Access", "reason": "lack of specialized care coverage and low platform engagement."},
+    "SaaS": {"contracts": ["Monthly Subscription", "Annual (Standard)", "Multi-Year (Enterprise)"], "service_label": "Infrastructure", "services": ["Shared Cloud", "Dedicated Instance", "On-Premise"], "support_label": "Success Manager", "reason": "underutilization of enterprise features and upcoming renewal friction."},
+    "Banking": {"contracts": ["Savings Account", "Current Account", "Investment Portfolio"], "service_label": "Credit Tier", "services": ["Standard", "Gold/Silver", "Platinum/Private"], "support_label": "Personal Banker", "reason": "low asset-to-debt ratio and interest rate sensitivity."}
 }
 
 cfg = n_cfg[selected_niche]
@@ -198,10 +198,18 @@ if not checked_rows.empty:
         st.session_state.selected_id = new_id
         st.rerun()
 
-# 4. SIMULATION LAB
+# --- SURGICAL ADDITION: AI REASONING SECTION ---
 target_id = st.session_state.selected_id
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
+render_metric(
+    "CHURN REASONING", 
+    "PREDICTIVE", 
+    "#FFFFFF", 
+    f"Model indicates {target_id} is likely to churn due to <b>{opts['reason']}</b> Analysis suggests immediate intervention via loyalty lock-ins."
+)
+
+# 4. SIMULATION LAB
 st.markdown(f'<p class="section-label">02 // Dynamic Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
 
@@ -224,12 +232,13 @@ with c2:
         help="Specific product tier. High-tier services (e.g., Fiber/Platinum) are weighted for specific market volatility."
     )
 with c3:
+    # SURGICAL FIX: Changed value=True to value=False for user-initiated checking
     has_support = st.checkbox(
-        opts["support_label"], value=True,
+        opts["support_label"], value=False,
         help="Active support access reduces risk probability scores by improving customer satisfaction scores."
     )
     agent_priority = st.checkbox(
-        "Priority AI Routing", value=True,
+        "Priority AI Routing", value=False,
         help="Enabling this routes high-risk accounts to senior retention specialists automatically."
     )
 
