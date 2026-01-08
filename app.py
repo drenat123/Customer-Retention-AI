@@ -161,16 +161,15 @@ def get_industry_data(prefix):
     np.random.seed(42) 
     df['RiskScore'] = [f"{np.random.randint(10, 98)}%" for _ in range(len(df))]
     
-    # Define Drivers and Corresponding Suggestions
+    # ALIGNED DRIVERS: Matching the Lab Features
     drivers = {
-        "Low Account Balance": "Suggest a low-tier plan migration to reduce financial pressure.",
-        "Short Tenure": "Suggest an Annual Loyalty Contract with a locked-in rate.",
-        "Month-to-Month Contract": "Suggest a 12-month upgrade with a VIP onboarding session.",
-        "High Usage Drop": "Suggest a feature-discovery call to re-engage the user.",
-        "Competitive Pricing": "Suggest a Tier 2 (25%) price-match discount immediately."
+        "Low Account Balance": "Apply <b>Tier 1 (10%)</b> and switch to <b>Two Year</b> contract to lower monthly strain.",
+        "Short Tenure": "Apply <b>Tier 1 (10%)</b> and toggle <b>Priority AI Routing</b> to build loyalty.",
+        "Month-to-Month Contract": "Switch to <b>One Year</b> contract to anchor the user.",
+        "High Usage Drop": "Apply <b>Tier 2 (25%)</b> and enable <b>Tech Support</b> to re-engage user.",
+        "Competitive Pricing": "Apply <b>VIP (50%)</b> discount immediately to match competitor market rates."
     }
     
-    # Map them to the dataframe
     random_keys = list(drivers.keys())
     df['RiskFactor'] = [np.random.choice(random_keys) for _ in range(len(df))]
     df['AISuggestion'] = df['RiskFactor'].map(drivers)
@@ -201,12 +200,10 @@ if 'selected_id' not in st.session_state or st.session_state.selected_id not in 
 st.markdown('<p class="section-label">01 // High-Risk Priority Queue</p>', unsafe_allow_html=True)
 display_df = base_df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'RiskScore']].copy()
 
-# SELECTION LOCK: Logic to ensure only one ID is ever in the session state
 display_df.insert(0, "Select", display_df['customerID'] == st.session_state.selected_id)
 display_df.columns = ['Select', 'Customer ID', 'Tenure (M)', 'MRR ($)', cfg['label'], 'AI Risk Score']
 edited_df = st.data_editor(display_df, hide_index=True, use_container_width=True, key=f"ed_{selected_niche}")
 
-# Reset logic to prevent multi-selection glitch
 checked_rows = edited_df[edited_df['Select'] == True]
 if not checked_rows.empty:
     new_id = checked_rows.iloc[-1]['Customer ID']
@@ -219,7 +216,6 @@ target_id = st.session_state.selected_id
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
 st.markdown("---")
-# Direct AI Insight and Dynamic "AI Suggests"
 render_metric(
     "INDIVIDUAL ANALYSIS", 
     selected_row['customerID'], 
