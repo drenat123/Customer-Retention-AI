@@ -20,11 +20,6 @@ st.markdown("""
         color: #E2E8F0;
     }
 
-    /* GLASS CARD EFFECT */
-    div[data-testid="stVerticalBlock"] > div {
-        background: transparent;
-    }
-
     /* HEADER STYLING */
     .header-container {
         text-align: center;
@@ -68,12 +63,6 @@ st.markdown("""
         border-bottom: 1px solid rgba(0, 240, 255, 0.1);
     }
 
-    /* INPUT STYLING */
-    .stSelectbox, .stNumberInput, .stCheckbox {
-        background: rgba(22, 27, 34, 0.5) !important;
-        border-radius: 12px !important;
-    }
-
     /* METRIC CARDS */
     .metric-card { 
         background: rgba(15, 19, 26, 0.6);
@@ -81,24 +70,42 @@ st.markdown("""
         border-radius: 16px;
         padding: 24px;
         backdrop-filter: blur(10px);
-        transition: transform 0.3s ease;
+        min-height: 180px; /* Ensures all cards stay aligned with text */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
-    .metric-card:hover { transform: translateY(-5px); border-color: rgba(0, 240, 255, 0.2); }
     
     .metric-header {
         display: flex; align-items: center; justify-content: space-between;
         color: #94A3B8; font-size: 13px; font-weight: 700; 
-        text-transform: uppercase; margin-bottom: 12px;
+        text-transform: uppercase; margin-bottom: 5px;
     }
-    .tooltip-icon { color: #484F58; cursor: help; font-size: 14px; }
-    .metric-val { font-size: 52px; font-weight: 800; line-height: 1; }
 
-    /* SPECIAL GLOWS */
+    .metric-main-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .metric-val { font-size: 48px; font-weight: 800; line-height: 1; margin: 0; }
+
+    /* NEON DESCRIPTION AREA */
+    .metric-desc {
+        flex: 1;
+        padding-left: 25px;
+        font-size: 12px;
+        line-height: 1.4;
+        color: rgba(0, 240, 255, 0.7); /* Subtle Neon Cyan */
+        font-weight: 500;
+        max-width: 55%;
+        text-align: right;
+    }
+
     .confidence-glow {
         color: #FFD700 !important;
-        text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-        border-bottom: 3px solid #FFD700;
-        padding-bottom: 4px;
+        text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        border-bottom: 2px solid #FFD700;
     }
 
     /* FOOTER */
@@ -128,16 +135,21 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-def render_metric(label, value, color, tooltip, is_confidence=False):
-    val_style = f"color: {color};"
+def render_metric(label, value, color, description, is_confidence=False):
     val_class = "metric-val confidence-glow" if is_confidence else "metric-val"
+    desc_color = "rgba(255, 215, 0, 0.6)" if is_confidence else "rgba(0, 240, 255, 0.6)"
+    
     st.markdown(f"""
         <div class="metric-card">
             <div class="metric-header">
                 <span>{label}</span>
-                <span class="tooltip-icon" title="{tooltip}">ⓘ</span>
             </div>
-            <div class="{val_class}" style="{val_style}">{value}</div>
+            <div class="metric-main-row">
+                <div class="{val_class}" style="color: {color};">{value}</div>
+                <div class="metric-desc" style="color: {desc_color};">
+                    {description}
+                </div>
+            </div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -214,9 +226,9 @@ m1, m2 = st.columns(2)
 with m1:
     col = "#FF4D4D" if sim_risk > 30 else "#00F0FF"
     lab = "CRITICAL CHURN RISK" if sim_risk > 30 else "STABLE RETENTION RISK"
-    render_metric(lab, f"{sim_risk:.1f}%", col, "The AI's calculated probability that this specific customer will terminate their contract within the next 30 days based on behavioral patterns and service interaction history.")
+    render_metric(lab, f"{sim_risk:.1f}%", col, "Calculated probability that this specific customer will terminate their contract within the next 30 days based on behavioral patterns.")
 with m2:
-    render_metric("REVENUE SAFEGUARDED", f"+${savings:,.2f}", "#00FFAB", "The projected dollar value of the Net Present Value (NPV) saved over a 24-month horizon by preventing this specific churn event through the selected intervention strategy.")
+    render_metric("REVENUE SAFEGUARDED", f"+${savings:,.2f}", "#00FFAB", "The projected dollar value of revenue saved over a 24-month horizon by preventing this churn event.")
 
 # 6. XAI
 st.markdown('<p class="section-label">03 // Explainable AI (XAI) Weights</p>', unsafe_allow_html=True)
@@ -224,22 +236,22 @@ x1, x2 = st.columns(2)
 with x1:
     val = "High" if contract != "Standard" else "Low"
     col = "#00FFAB" if val == "High" else "#FF4D4D"
-    render_metric(f"{cfg['label']} WEIGHT", val, col, f"Quantifies the influence of the current {cfg['label']} on the final risk score. High impact acts as a primary retention anchor, while Low impact suggests the contract type is not incentivizing the customer to stay.")
+    render_metric(f"{cfg['label']} WEIGHT", val, col, f"Impact of the current {cfg['label']} on the final risk. High impact acts as a primary retention anchor.")
 with x2:
     val = "High" if has_support else "Low"
     col = "#00FFAB" if val == "High" else "#FF4D4D"
-    render_metric("SUPPORT WEIGHT", val, col, "Measures the correlation between active support interactions and customer sentiment. High support impact indicates that human intervention is effectively neutralizing friction, whereas Low impact suggests a disconnected or neglected account.")
+    render_metric("SUPPORT WEIGHT", val, col, "Measures the effectiveness of human support. High impact indicates human intervention is neutralizing friction.")
 
 # 7. MACRO IMPACT
 st.markdown('<p class="section-label">04 // Macro Business Impact Projections</p>', unsafe_allow_html=True)
 bi1, bi2, bi3 = st.columns(3)
 with bi1: 
     ann = (savings * 12 * (cfg['scale']/100))
-    render_metric("PROJECTED ANNUAL SAVINGS", f"+${ann:,.0f}", "#00FFAB", "Calculates the total potential EBITDA impact if this retention strategy were scaled across the entire customer database, adjusted for market volatility and industry-specific churn averages.")
+    render_metric("PROJECTED ANNUAL SAVINGS", f"+${ann:,.0f}", "#00FFAB", "Total potential EBITDA impact if this retention strategy were scaled across the entire database.")
 with bi2: 
-    render_metric("MODEL PERFORMANCE (AUC)", "91%", "#00F0FF", "The Area Under the Curve (AUC) metric representing the model's historical accuracy in distinguishing between churners and non-churners. A 91% rating indicates industry-leading precision.")
+    render_metric("MODEL PERFORMANCE (AUC)", "91%", "#00F0FF", "Historical accuracy in distinguishing churners. A 91% rating indicates industry-leading precision.")
 with bi3: 
-    render_metric("AI INFERENCE CONFIDENCE", "94.2%", "#FFD700", "The real-time statistical certainty of this specific prediction, calculated using Monte Carlo simulations to ensure the recommendation is robust against data anomalies.", is_confidence=True)
+    render_metric("AI INFERENCE CONFIDENCE", "94.2%", "#FFD700", "Statistical certainty of this prediction, ensured by Monte Carlo simulations for robustness.", is_confidence=True)
 
 # 8. FOOTER
 st.markdown("""
