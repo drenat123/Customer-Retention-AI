@@ -29,7 +29,7 @@ st.markdown("""
         font-size: 70px;
         filter: drop-shadow(0 0 30px rgba(0, 240, 255, 0.4));
         display: inline-block;
-        animation: float 4s infinite ease-in-out;
+        animation: float 4s infinite ease-out;
     }
     .main-title {
         font-size: 57px !important;
@@ -205,7 +205,8 @@ cfg = n_cfg[selected_niche]
 opts = industry_options[selected_niche]
 base_df = get_industry_data(selected_niche, cfg['prefix'])
 
-if 'selected_id' not in st.session_state or st.session_state.selected_id not in base_df['customerID'].values:
+# Initialize session state for the target ID
+if 'selected_id' not in st.session_state:
     st.session_state.selected_id = base_df.iloc[0]['customerID']
 
 # 3. PRIORITY QUEUE
@@ -214,12 +215,12 @@ display_df = base_df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'Ris
 display_df.insert(0, "Select", display_df['customerID'] == st.session_state.selected_id)
 display_df.columns = ['Select', 'Customer ID', 'Tenure (M)', 'MRR ($)', cfg['label'], 'AI Risk Score']
 
-# FIXED: Unique key based on industry to prevent TypeError
+# FIXED: Stable key and error handling
 edited_df = st.data_editor(
     display_df, 
     hide_index=True, 
     use_container_width=True, 
-    key=f"data_editor_{selected_niche}",
+    key=f"editor_stable_{selected_niche}",
     help="The model prioritizes these accounts based on real-time churn probability gradients."
 )
 
@@ -231,8 +232,13 @@ if not checked_rows.empty:
         st.rerun()
 
 # --- INDIVIDUAL RISK ANALYSIS ---
-target_id = st.session_state.selected_id
-selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
+# Safe lookup to prevent crash if data refreshes
+try:
+    target_id = st.session_state.selected_id
+    selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
+except:
+    st.session_state.selected_id = base_df.iloc[0]['customerID']
+    st.rerun()
 
 st.markdown("---")
 render_metric(
@@ -249,7 +255,10 @@ c1, c2, c3 = st.columns(3)
 
 with c1:
     tenure = st.number_input("Adjust Tenure (Months)", 1, 72, value=int(selected_row['tenure']), help="Observe how customer longevity correlates with churn resilience.")
-    contract = st.selectbox(f"Modify {cfg['label']}", opts["contracts"], help="Commitment terms are the strongest predictors of churn in this model.")
+    # Safe index finding
+    current_contract = selected_row['Contract']
+    idx = opts["contracts"].index(current_contract) if current_contract in opts["contracts"] else 0
+    contract = st.selectbox(f"Modify {cfg['label']}", opts["contracts"], index=idx, help="Commitment terms are the strongest predictors of churn in this model.")
 with c2:
     monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="Simulate price sensitivity and revenue exposure.")
 with c3:
@@ -265,7 +274,7 @@ with b3: st.button("Tier 2 (25%)", on_click=lambda: st.session_state.update({"ac
 with b4: st.button("VIP (50%)", on_click=lambda: st.session_state.update({"active_discount": 50}), key="btn50")
 
 # --- CALIBRATION ---
-sim_risk = 85.0 if any(word in contract for word in ["Month", "Basic", "Savings"]) else 45.0
+sim_risk = 85.0 if any(word in contract for word in ["Month", "Basic", "Savings", "Subscription"]) else 45.0
 if has_support: sim_risk -= 35.0
 if agent_priority: sim_risk -= 25.0
 sim_risk -= (st.session_state.active_discount * 1.2)
