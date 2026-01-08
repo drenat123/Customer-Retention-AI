@@ -80,6 +80,6 @@ I am currently specializing in Data Science and ML. My goal is to move beyond lo
 *AEGIS is my latest project—a predictive deployment built to handle the noise of real-world data. I’ve put it through extensive stress-testing to ensure it delivers accurate, actionable churn insights that businesses can actually trust.*
 
 ### 🔗 Connect with me:
-👉 **[LinkedIn](https://www.linkedin.com/in/drenat-nallbani-b92229392/)** 👉 **[GitHub Portfolio](https://github.com/drenat123)** 📧 **[Email Me](dreninallbani@gmail.com)**
+👉 **[LinkedIn](https://www.linkedin.com/in/drenat-nallbani-b92229392/)** 👉 **[GitHub Portfolio](https://github.com/drenat123)** 📧 **[Email Me] dreninallbani@gmail.com**
 
 > "While mastering BI for historical analysis, I decided to push further and build a predictive ML deployment to see how these insights drive real-time business decisions."
