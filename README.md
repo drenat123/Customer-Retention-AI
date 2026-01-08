@@ -9,7 +9,6 @@
 ## 🔗 Live Deployment
 👉 **[Launch Live AEGIS Dashboard](https://customer-retention-ai-cqjuv5mztzg7q6yng2fjhf.streamlit.app/)**
 
-> *"While mastering BI for historical analysis, I decided to push further and build a predictive ML deployment to see how these insights drive real-time business decisions."*
 
 ---
 
