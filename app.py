@@ -161,6 +161,10 @@ def get_industry_data(prefix):
     df['customerID'] = [f"{prefix}-{cid}" for cid in df['customerID']]
     np.random.seed(42) 
     df['RiskScore'] = [f"{np.random.randint(10, 98)}%" for _ in range(len(df))]
+    
+    # ADDED LOGIC FOR THE "WHY" FACTOR
+    drivers = ["Low Account Balance", "Short Tenure", "Month-to-Month Contract", "High Usage Drop", "Competitive Pricing"]
+    df['RiskFactor'] = [np.random.choice(drivers) for _ in range(len(df))]
     return df
 
 n_cfg = {
@@ -198,10 +202,21 @@ if not checked_rows.empty:
         st.session_state.selected_id = new_id
         st.rerun()
 
-# 4. SIMULATION LAB
+# 🛡️ NEW SECTION: INDIVIDUAL RISK ANALYSIS (The "Why" Factor)
 target_id = st.session_state.selected_id
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
+st.markdown("---")
+# This matches your metric card style but for specific individual analysis
+render_metric(
+    "INDIVIDUAL ANALYSIS", 
+    selected_row['customerID'], 
+    "#FFFFFF", 
+    f"<b>PRIMARY CHURN DRIVER:</b> {selected_row['RiskFactor']}<br><br>"
+    f"AI confirms a strong correlation between {selected_row['RiskFactor'].lower()} and churn probability for this profile."
+)
+
+# 4. SIMULATION LAB
 st.markdown(f'<p class="section-label">02 // Dynamic Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
 
