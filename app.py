@@ -61,6 +61,10 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# --- NEW TITLE LINE (SAFE ADDITION) ---
+st.markdown("<h1 style='color: white; font-weight: 700; margin-bottom: -20px;'>AI Retention Hub</h1>", unsafe_allow_html=True)
+# --------------------------------------
+
 def render_metric(label, value, color, tooltip):
     st.markdown(f"""
         <div class="metric-card">
@@ -149,17 +153,15 @@ with m1:
 with m2:
     render_metric("🟢 REVENUE SAFEGUARDED", f"+${savings:,.2f}", "#00FFAB", "Estimated dollar value of revenue protected by this strategy over 24 months.")
 
-# 6. SECTION 3: XAI (REVERSED COLORS APPLIED HERE)
+# 6. SECTION 3: XAI
 st.markdown("---")
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 x1, x2 = st.columns(2)
 with x1:
-    # High impact from Contract = Good (Green)
     val = "High" if contract != "Standard" else "Low"
     col = "#00FFAB" if val == "High" else "#FF4D4D"
     render_metric(f"{cfg['label']} IMPACT", val, col, f"Measures how much the {cfg['label']} acts as a retention anchor. High impact is a positive sign for loyalty.")
 with x2:
-    # Low impact from Support = Bad (Red)
     val = "High" if has_support else "Low"
     col = "#00FFAB" if val == "High" else "#FF4D4D"
     render_metric("SUPPORT IMPACT", val, col, "Evaluates the weight of support engagement. Low impact indicates a lack of engagement, which increases churn risk.")
@@ -177,3 +179,4 @@ with bi3:
     render_metric("🟡 CONFIDENCE", "94.2%", "#FFD700", "AI confidence level in this specific prediction.")
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani</p>", unsafe_allow_html=True)
+    
