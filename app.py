@@ -20,7 +20,6 @@ st.markdown("""
         color: #E2E8F0;
     }
 
-    /* HEADER STYLING */
     .header-container {
         text-align: center;
         padding: 60px 0 40px 0;
@@ -51,7 +50,6 @@ st.markdown("""
         opacity: 0.9;
     }
 
-    /* SECTION LABELS */
     .section-label { 
         color: #00F0FF; 
         font-size: 12px; 
@@ -63,7 +61,6 @@ st.markdown("""
         border-bottom: 1px solid rgba(0, 240, 255, 0.1);
     }
 
-    /* METRIC CARDS */
     .metric-card { 
         background: rgba(15, 19, 26, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.05);
@@ -93,7 +90,6 @@ st.markdown("""
 
     .metric-val { font-size: 42px; font-weight: 800; line-height: 1; margin: 0; white-space: nowrap; }
 
-    /* NEON LIVE INSIGHT AREA */
     .live-insight {
         flex: 1;
         font-size: 11px;
@@ -160,7 +156,6 @@ def render_metric(label, value, color, insight_text, is_confidence=False):
 # 2. DATA ENGINE
 selected_niche = st.selectbox("📂 Select Enterprise Database", ["Telecommunications", "Healthcare", "SaaS", "Banking"])
 
-# Mapping industry-specific terms for the Simulation Lab
 industry_options = {
     "Telecommunications": {
         "contracts": ["Month-to-month", "One year", "Two year"],
@@ -208,8 +203,10 @@ def get_industry_data(prefix):
 
 base_df = get_industry_data(cfg['prefix'])
 
-if 'selected_id' not in st.session_state:
+# 🛡️ THE FIX: Check if the ID exists in the current database. If not, pick the first one.
+if 'selected_id' not in st.session_state or st.session_state.selected_id not in base_df['customerID'].values:
     st.session_state.selected_id = base_df.iloc[0]['customerID']
+
 if 'active_discount' not in st.session_state:
     st.session_state.active_discount = 0
 
@@ -229,6 +226,7 @@ if not checked_rows.empty:
 
 # 4. DYNAMIC SIMULATION LAB
 target_id = st.session_state.selected_id
+# This line is now safe because of the check we added above
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
 st.markdown(f'<p class="section-label">02 // Dynamic Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
@@ -251,7 +249,7 @@ with b2: st.button("Tier 1 (10%)", on_click=lambda: st.session_state.update({"ac
 with b3: st.button("Tier 2 (25%)", on_click=lambda: st.session_state.update({"active_discount": 25}), key="btn25")
 with b4: st.button("VIP (50%)", on_click=lambda: st.session_state.update({"active_discount": 50}), key="btn50")
 
-# Logic v2.0 - Dynamic Industry-Aware Risk Engine
+# Logic v2.0
 base_risk = 75 if "Month" in contract or "Basic" in contract or "Savings" in contract else 25
 if "Fiber" in str(service) or "Platinum" in str(service): base_risk += 10
 if not has_support: base_risk += 15
@@ -259,7 +257,7 @@ base_risk = max(5, min(95, base_risk - (tenure * 0.4)))
 sim_risk = max(5, base_risk - (st.session_state.active_discount * 0.7))
 savings = ((base_risk/100) * (monthly * 24)) - ((sim_risk/100) * ((monthly * (1 - st.session_state.active_discount/100)) * 24))
 
-# 5. DYNAMIC RESULTS (WITH NEON LIVE INSIGHTS)
+# 5. DYNAMIC RESULTS
 st.markdown("---")
 m1, m2 = st.columns(2)
 with m1:
