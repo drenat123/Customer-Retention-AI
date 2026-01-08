@@ -97,6 +97,29 @@ st.markdown("""
         line-height: 1.6;
     }
 
+    /* FOOTER CENTERING FIX */
+    .footer-brand {
+        text-align: center !important; 
+        margin-top: 80px; 
+        padding: 60px 0;
+        background: linear-gradient(to top, rgba(0, 240, 255, 0.03), transparent);
+        display: flex;
+        flex-direction: column;
+        align-items: center; 
+        justify-content: center;
+        width: 100%;
+    }
+    .footer-text {
+        font-size: clamp(24px, 5vw, 32px) !important; 
+        font-weight: 800; 
+        letter-spacing: -1px;
+        background: linear-gradient(180deg, #FFFFFF 0%, #475569 100%);
+        -webkit-background-clip: text; 
+        -webkit-text-fill-color: transparent;
+        margin: 10px 0 !important;
+        text-align: center !important;
+    }
+
     @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
     </style>
     """, unsafe_allow_html=True)
@@ -132,7 +155,6 @@ n_cfg = {
     "Banking": {"scale": 150000, "label": "Account Type", "prefix": "BANK"}
 }
 
-# In-depth professional reasons
 industry_options = {
     "Telecommunications": {
         "contracts": ["Month-to-month", "One year", "Two year"], "service_label": "Internet Service", "services": ["Fiber optic", "DSL", "No"], "support_label": "Tech Support",
@@ -173,7 +195,7 @@ if not checked_rows.empty:
         st.session_state.selected_id = new_id
         st.rerun()
 
-# --- SURGICAL UPDATE: MATCHING IMAGE REFERENCE ---
+# --- INDIVIDUAL ANALYSIS SECTION ---
 target_id = st.session_state.selected_id
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
@@ -214,7 +236,7 @@ with b2: st.button("Tier 1 (10%)", on_click=lambda: st.session_state.update({"ac
 with b3: st.button("Tier 2 (25%)", on_click=lambda: st.session_state.update({"active_discount": 25}), key="btn25")
 with b4: st.button("VIP (50%)", on_click=lambda: st.session_state.update({"active_discount": 50}), key="btn50")
 
-# Logic (sacred)
+# Realistic Risk Logic (Sacred)
 risk_multiplier = 0.4 if selected_niche != "Banking" else 0.8
 base_risk = 75 if "Month" in contract or "Basic" in contract or "Savings" in contract else 25
 if "Fiber" in str(service) or "Platinum" in str(service): base_risk += 12
@@ -252,11 +274,11 @@ with x2:
 with x3:
     render_metric_small("AI CONFIDENCE", f"{dyn_confidence:.1f}%", "#FFD700", "Statistical certainty score.")
 
-# 8. FOOTER
+# 8. FOOTER - FIXED AND CENTERED
 st.markdown(f"""
     <div class="footer-brand">
-        <p style="color: #64748B; font-size: 13px; text-transform: uppercase; letter-spacing: 3px; font-weight: 700; margin-bottom: 10px;">Engineering & Design by</p>
+        <p style="color: #64748B; font-size: 12px; text-transform: uppercase; letter-spacing: 3px; font-weight: 700; margin: 0;">Engineering & Design by</p>
         <h2 class="footer-text">DRENAT NALLBANI</h2>
-        <div style="width: 80px; height: 2px; background: #00F0FF; margin: 15px auto;"></div>
+        <div style="width: 80px; height: 2px; background: #00F0FF; margin-top: 5px;"></div>
     </div>
     """, unsafe_allow_html=True)
