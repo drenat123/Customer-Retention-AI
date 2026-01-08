@@ -6,7 +6,7 @@ import numpy as np
 st.set_page_config(page_title="Aegis Retention AI", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 LOCKED UI - DO NOT ALTER EXISTING LOGIC
+# 🎨 LOCKED UI & AEGIS BRANDING - DO NOT ALTER
 # ==========================================
 st.markdown("""
     <style>
@@ -20,53 +20,54 @@ st.markdown("""
         color: white;
     }
 
-    /* --- THE EYE-CATCHER HEADER SECTION --- */
+    /* --- AEGIS EYE-CATCHER HEADER --- */
     .header-container {
         text-align: center;
-        padding: 40px 0 20px 0;
-        background: radial-gradient(circle at center, rgba(0, 240, 255, 0.05) 0%, transparent 70%);
+        padding: 50px 0 30px 0;
+        background: radial-gradient(circle at center, rgba(0, 240, 255, 0.08) 0%, transparent 70%);
     }
 
     .logo-shield {
-        font-size: 50px;
-        margin-bottom: 10px;
-        filter: drop-shadow(0 0 15px #00F0FF);
-        animation: pulse 3s infinite ease-in-out;
+        font-size: 60px;
+        margin-bottom: 15px;
+        filter: drop-shadow(0 0 20px #00F0FF);
+        display: inline-block;
+        animation: float 4s infinite ease-in-out;
     }
 
     .main-title {
-        font-size: 64px !important;
+        font-size: 72px !important;
         font-weight: 800 !important;
-        letter-spacing: -2px !important;
+        letter-spacing: -3px !important;
+        line-height: 1 !important;
         background: linear-gradient(180deg, #FFFFFF 0%, #94A3B8 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0px !important;
+        margin-bottom: 5px !important;
     }
 
     .sub-title {
         color: #00F0FF;
-        font-size: 16px;
-        font-weight: 500;
+        font-size: 14px;
+        font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 4px;
-        margin-top: -10px;
-        opacity: 0.8;
+        letter-spacing: 6px;
+        opacity: 0.9;
     }
 
-    .gradient-line {
-        height: 2px;
-        width: 300px;
-        margin: 20px auto;
+    .glow-line {
+        height: 1px;
+        width: 400px;
+        margin: 25px auto;
         background: linear-gradient(90deg, transparent, #00F0FF, transparent);
+        box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
     }
 
-    @keyframes pulse {
-        0% { transform: scale(1); opacity: 0.8; }
-        50% { transform: scale(1.05); opacity: 1; }
-        100% { transform: scale(1); opacity: 0.8; }
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
     }
-    /* -------------------------------------- */
+    /* -------------------------------- */
 
     .section-label { 
         color: #00F0FF; 
@@ -109,13 +110,13 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- INJECTING THE EYE-CATCHER HEADER ---
+# --- HEADER INJECTION ---
 st.markdown("""
     <div class="header-container">
         <div class="logo-shield">🛡️</div>
         <h1 class="main-title">AEGIS RETENTION</h1>
-        <p class="sub-title">Predictive Intelligence & Revenue Protection</p>
-        <div class="gradient-line"></div>
+        <p class="sub-title">Advanced Predictive Intelligence</p>
+        <div class="glow-line"></div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -177,11 +178,11 @@ selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 st.markdown(f'<p class="section-label">2. Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
 c1, c2 = st.columns(2)
 with c1:
-    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']), help="Customer's loyalty duration. Higher tenure usually lowers churn risk.")
-    contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"], help="Current service tier. Higher tiers are better for retention.")
+    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']), help="Customer's loyalty duration.")
+    contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"], help="Current service tier.")
 with c2:
-    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="Monthly recurring revenue. High-value accounts are prioritized.")
-    has_support = st.checkbox("Simulate Priority Support?", value=True, help="Simulate the impact of a dedicated agent on customer retention.")
+    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="Monthly recurring revenue.")
+    has_support = st.checkbox("Simulate Priority Support?", value=True, help="Simulate impact of a dedicated agent.")
 
 st.markdown("<br>", unsafe_allow_html=True)
 b1, b2, b3, b4 = st.columns(4)
@@ -203,9 +204,9 @@ m1, m2 = st.columns(2)
 with m1:
     col = "#FF4D4D" if sim_risk > 30 else "#00F0FF"
     lab = "🔴 CRITICAL RISK" if sim_risk > 30 else "🔵 STABLE RISK"
-    render_metric(lab, f"{sim_risk:.1f}%", col, "AI's predicted probability of this customer churning based on current variables.")
+    render_metric(lab, f"{sim_risk:.1f}%", col, "Predicted probability of churn.")
 with m2:
-    render_metric("🟢 REVENUE SAFEGUARDED", f"+${savings:,.2f}", "#00FFAB", "Estimated dollar value of revenue protected by this strategy over 24 months.")
+    render_metric("🟢 REVENUE SAFEGUARDED", f"+${savings:,.2f}", "#00FFAB", "Estimated dollar value of revenue protected.")
 
 # 6. SECTION 3: XAI
 st.markdown("---")
@@ -214,11 +215,11 @@ x1, x2 = st.columns(2)
 with x1:
     val = "High" if contract != "Standard" else "Low"
     col = "#00FFAB" if val == "High" else "#FF4D4D"
-    render_metric(f"{cfg['label']} IMPACT", val, col, f"Measures how much the {cfg['label']} acts as a retention anchor. High impact is a positive sign for loyalty.")
+    render_metric(f"{cfg['label']} IMPACT", val, col, "Impact as a retention anchor.")
 with x2:
     val = "High" if has_support else "Low"
     col = "#00FFAB" if val == "High" else "#FF4D4D"
-    render_metric("SUPPORT IMPACT", val, col, "Evaluates the weight of support engagement. Low impact indicates a lack of engagement, which increases churn risk.")
+    render_metric("SUPPORT IMPACT", val, col, "Weight of support engagement.")
 
 # 7. SECTION 4: MACRO IMPACT
 st.markdown("---")
@@ -226,10 +227,10 @@ st.markdown('<p class="section-label">4. Macro Business Impact Projection</p>', 
 bi1, bi2, bi3 = st.columns(3)
 with bi1: 
     ann = (savings * 12 * (cfg['scale']/100))
-    render_metric("🟢 ANNUAL SAVINGS", f"+${ann:,.0f}", "#00FFAB", "Projected yearly savings if this retention logic were applied globally.")
+    render_metric("🟢 ANNUAL SAVINGS", f"+${ann:,.0f}", "#00FFAB", "Projected yearly savings.")
 with bi2: 
-    render_metric("🔵 EFFICIENCY", "91%", "#00F0FF", "Historical accuracy of the churn model.")
+    render_metric("🔵 EFFICIENCY", "91%", "#00F0FF", "Historical accuracy.")
 with bi3: 
-    render_metric("🟡 CONFIDENCE", "94.2%", "#FFD700", "AI confidence level in this specific prediction.")
+    render_metric("🟡 CONFIDENCE", "94.2%", "#FFD700", "AI confidence level.")
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani</p>", unsafe_allow_html=True)
