@@ -154,22 +154,34 @@ if 'active_discount' not in st.session_state:
     st.session_state.active_discount = 0
 
 @st.cache_data
-def get_industry_data(prefix):
+def get_industry_data(niche, prefix):
     url = "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv"
     df = pd.read_csv(url).head(15)
     df['customerID'] = [f"{prefix}-{cid}" for cid in df['customerID']]
     np.random.seed(42) 
     df['RiskScore'] = [f"{np.random.randint(10, 98)}%" for _ in range(len(df))]
     
-    # HIGH-IMPACT DRIVERS: These now map to massive risk reductions
-    drivers = {
-        "Low Account Balance": "Switch to <b>Two Year</b> contract to lower monthly strain.",
-        "Short Tenure": "Toggle <b>Priority AI Routing</b> to build brand loyalty.",
-        "Month-to-Month Contract": "Upgrade to a <b>One Year</b> contract to anchor the account.",
-        "High Usage Drop": f"Enable <b>Tech Support</b> to re-engage user.",
-        "Competitive Pricing": "Apply <b>VIP (50%)</b> discount to outperform market competitors."
+    # INDUSTRY-SPECIFIC LOGIC
+    industry_prompts = {
+        "Telecommunications": {
+            "Low Account Balance": "Switch to <b>Two Year</b> contract to lower monthly strain.",
+            "Short Tenure": "Toggle <b>Priority AI Routing</b> to build brand loyalty."
+        },
+        "Healthcare": {
+            "Low Account Balance": "Switch to <b>Enterprise/VIP</b> plan for bulk subsidies.",
+            "Short Tenure": "Enable <b>Telemedicine Access</b> to increase platform touchpoints."
+        },
+        "SaaS": {
+            "Low Account Balance": "Move to <b>Multi-Year</b> billing to lock in current rates.",
+            "Short Tenure": "Assign a <b>Success Manager</b> to ensure platform adoption."
+        },
+        "Banking": {
+            "Low Account Balance": "Upgrade to <b>Investment Portfolio</b> for better interest yields.",
+            "Short Tenure": "Assign a <b>Personal Banker</b> to manage the relationship."
+        }
     }
     
+    drivers = industry_prompts.get(niche, industry_prompts["Telecommunications"])
     random_keys = list(drivers.keys())
     df['RiskFactor'] = [np.random.choice(random_keys) for _ in range(len(df))]
     df['AISuggestion'] = df['RiskFactor'].map(drivers)
@@ -183,15 +195,15 @@ n_cfg = {
 }
 
 industry_options = {
-    "Telecommunications": {"contracts": ["Month-to-month", "One year", "Two year"], "service_label": "Internet Service", "services": ["Fiber optic", "DSL", "No"], "support_label": "Tech Support"},
-    "Healthcare": {"contracts": ["Basic Plan", "Family Cover", "Enterprise/VIP"], "service_label": "Insurance Tier", "services": ["Public", "Private", "International"], "support_label": "Telemedicine Access"},
-    "SaaS": {"contracts": ["Monthly Subscription", "Annual (Standard)", "Multi-Year (Enterprise)"], "service_label": "Infrastructure", "services": ["Shared Cloud", "Dedicated Instance", "On-Premise"], "support_label": "Success Manager"},
-    "Banking": {"contracts": ["Savings Account", "Current Account", "Investment Portfolio"], "service_label": "Credit Tier", "services": ["Standard", "Gold/Silver", "Platinum/Private"], "support_label": "Personal Banker"}
+    "Telecommunications": {"contracts": ["Month-to-month", "One year", "Two year"], "support_label": "Tech Support"},
+    "Healthcare": {"contracts": ["Basic Plan", "Family Cover", "Enterprise/VIP"], "support_label": "Telemedicine Access"},
+    "SaaS": {"contracts": ["Monthly Subscription", "Annual (Standard)", "Multi-Year (Enterprise)"], "support_label": "Success Manager"},
+    "Banking": {"contracts": ["Savings Account", "Current Account", "Investment Portfolio"], "support_label": "Personal Banker"}
 }
 
 cfg = n_cfg[selected_niche]
 opts = industry_options[selected_niche]
-base_df = get_industry_data(cfg['prefix'])
+base_df = get_industry_data(selected_niche, cfg['prefix'])
 
 if 'selected_id' not in st.session_state or st.session_state.selected_id not in base_df['customerID'].values:
     st.session_state.selected_id = base_df.iloc[0]['customerID']
@@ -199,12 +211,10 @@ if 'selected_id' not in st.session_state or st.session_state.selected_id not in 
 # 3. PRIORITY QUEUE
 st.markdown('<p class="section-label">01 // High-Risk Priority Queue</p>', unsafe_allow_html=True)
 display_df = base_df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'RiskScore']].copy()
-
 display_df.insert(0, "Select", display_df['customerID'] == st.session_state.selected_id)
 display_df.columns = ['Select', 'Customer ID', 'Tenure (M)', 'MRR ($)', cfg['label'], 'AI Risk Score']
 edited_df = st.data_editor(display_df, hide_index=True, use_container_width=True, key=f"ed_{selected_niche}")
 
-# SELECTION LOCK: Keeps it single-user focus
 checked_rows = edited_df[edited_df['Select'] == True]
 if not checked_rows.empty:
     new_id = checked_rows.iloc[-1]['Customer ID']
@@ -228,13 +238,11 @@ render_metric(
 # 4. SIMULATION LAB
 st.markdown(f'<p class="section-label">02 // Dynamic Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
-
 with c1:
     tenure = st.number_input("Adjust Tenure (Months)", 1, 72, value=int(selected_row['tenure']))
-    contract = st.selectbox(f"Modify {cfg['label']}", opts["contracts"], index=opts["contracts"].index(selected_row['Contract']) if selected_row['Contract'] in opts["contracts"] else 0)
+    contract = st.selectbox(f"Modify {cfg['label']}", opts["contracts"])
 with c2:
     monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']))
-    service = st.selectbox(opts["service_label"], opts["services"])
 with c3:
     has_support = st.checkbox(opts["support_label"], value=False)
     agent_priority = st.checkbox("Priority AI Routing", value=False)
@@ -246,51 +254,26 @@ with b2: st.button("Tier 1 (10%)", on_click=lambda: st.session_state.update({"ac
 with b3: st.button("Tier 2 (25%)", on_click=lambda: st.session_state.update({"active_discount": 25}), key="btn25")
 with b4: st.button("VIP (50%)", on_click=lambda: st.session_state.update({"active_discount": 50}), key="btn50")
 
-# ==========================================
-# 📊 NEW AGGRESSIVE CALIBRATION LOGIC
-# ==========================================
-# 1. Base Risk starts very high for monthly users
+# --- CALIBRATION ---
 sim_risk = 85.0 if "Month" in contract or "Basic" in contract or "Savings" in contract else 45.0
-
-# 2. Apply HUGE reductions if AI suggestions are followed
-if has_support: sim_risk -= 35.0  # Massive drop for support re-engagement
-if agent_priority: sim_risk -= 25.0  # Big drop for priority routing
-if "One year" in contract or "Annual" in contract: sim_risk -= 20.0
-if "Two year" in contract or "Multi-Year" in contract: sim_risk -= 40.0
-
-# 3. Apply Discount Impacts
+if has_support: sim_risk -= 35.0
+if agent_priority: sim_risk -= 25.0
 sim_risk -= (st.session_state.active_discount * 1.2)
-
-# 4. Final Cleanup
 sim_risk = max(4.2, min(98.0, sim_risk))
 
-# Calculate Savings based on Risk Reduction
 initial_risk_val = float(selected_row['RiskScore'].replace('%','')) / 100
 current_risk_val = sim_risk / 100
-total_val = monthly * 24
-savings = (initial_risk_val - current_risk_val) * total_val
-savings = max(0, savings) # Don't show negative savings
-
-dyn_confidence = 94.2 + (np.sin(tenure) * 1.5)
+savings = (initial_risk_val - current_risk_val) * (monthly * 24)
+savings = max(0, savings)
 
 # 5. DYNAMIC RESULTS
 st.markdown("---")
 m1, m2 = st.columns(2)
 with m1:
     col = "#FF4D4D" if sim_risk > 35 else "#00F0FF"
-    render_metric("CHURN RISK", f"{sim_risk:.1f}%", col, f"AI-calibrated risk for {selected_niche}. Validated at 87.7% precision.")
+    render_metric("CHURN RISK", f"{sim_risk:.1f}%", col, f"AI-calibrated risk for {selected_niche}.")
 with m2:
-    render_metric("REVENUE SAVED", f"+${savings:,.2f}", "#00FFAB", "Projected total revenue preserved over a 24-month lifecycle.")
-
-# 6. MACRO IMPACT
-st.markdown('<p class="section-label">03 // Intelligence & Macro Projections</p>', unsafe_allow_html=True)
-x1, x2, x3 = st.columns(3)
-with x1:
-    render_metric(f"{cfg['label'].upper()} WEIGHT", "HIGH", "#00FFAB", "Model identifies commitment level as a primary anchor.")
-with x2:
-    render_metric("ANNUAL IMPACT", f"+${(savings * 12 * (cfg['scale']/100)):,.0f}", "#00FFAB", f"Projected EBITDA impact across {cfg['scale']:,} accounts.")
-with x3:
-    render_metric("AI CONFIDENCE", f"{dyn_confidence:.1f}%", "#FFD700", "Statistical certainty score based on historical cross-validation.")
+    render_metric("REVENUE SAVED", f"+${savings:,.2f}", "#00FFAB", "Projected total revenue preserved over 24 months.")
 
 # 8. FOOTER
 st.markdown(f"""
