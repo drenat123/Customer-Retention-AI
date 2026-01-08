@@ -6,55 +6,61 @@ import numpy as np
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 CSS FIX: TARGETING INTERNAL METRIC DIVS
+# 🎨 FINAL AGGRESSIVE COLOR OVERRIDE
 # ==========================================
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
+    
+    /* Hide Header */
     header, [data-testid="stHeader"] { display: none !important; }
-    html, body, [class*="st-"] { 
-        font-family: 'Plus Jakarta Sans', sans-serif; 
+    
+    /* Global Background */
+    html, body, [st-emotion-cache] { 
         background-color: #0B0E14 !important;
-        color: #FFFFFF; 
     }
 
-    /* Core Metric Styling - Targeting the nested div inside the Value */
-    [data-testid="stMetricValue"] div { 
-        font-size: 48px !important; 
-        font-weight: 700 !important; 
+    /* THE FIX: Targeting the value divs by their position and forcing color */
+    /* This targets the actual number/text regardless of nesting */
+    [data-testid="stMetricValue"] > div {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 48px !important;
+        font-weight: 700 !important;
     }
 
-    /* 🟢 GREEN METRICS: SAFEGUARDED & SAVINGS */
-    div[data-testid="stMetric"]:has(label:contains("SAFEGUARDED")) [data-testid="stMetricValue"] div,
-    div[data-testid="stMetric"]:has(label:contains("SAVINGS")) [data-testid="stMetricValue"] div { 
-        color: #00FFAB !important; 
+    /* 🟢 GREEN: Safeguarded, Savings, and Positive XAI */
+    div[data-testid="stMetric"]:has(label:contains("SAFEGUARDED")) [data-testid="stMetricValue"] *,
+    div[data-testid="stMetric"]:has(label:contains("SAVINGS")) [data-testid="stMetricValue"] *,
+    div[data-testid="stMetric"]:has(label:contains("🟢")) [data-testid="stMetricValue"] * {
+        color: #00FFAB !important;
+        -webkit-text-fill-color: #00FFAB !important;
     }
+
+    /* 🔴 RED: Critical Risk and Negative XAI */
+    div[data-testid="stMetric"]:has(label:contains("CRITICAL")) [data-testid="stMetricValue"] *,
+    div[data-testid="stMetric"]:has(label:contains("🔴")) [data-testid="stMetricValue"] * {
+        color: #FF4D4D !important;
+        -webkit-text-fill-color: #FF4D4D !important;
+    }
+
+    /* 🔵 CYAN: Stable and Efficiency */
+    div[data-testid="stMetric"]:has(label:contains("STABLE")) [data-testid="stMetricValue"] *,
+    div[data-testid="stMetric"]:has(label:contains("EFFICIENCY")) [data-testid="stMetricValue"] * {
+        color: #00F0FF !important;
+        -webkit-text-fill-color: #00F0FF !important;
+    }
+
+    /* 🟡 YELLOW: Confidence */
+    div[data-testid="stMetric"]:has(label:contains("CONFIDENCE")) [data-testid="stMetricValue"] * {
+        color: #FFD700 !important;
+        -webkit-text-fill-color: #FFD700 !important;
+    }
+
+    /* Labels and Section styling */
+    [data-testid="stMetricLabel"] { font-size: 14px !important; color: #94A3B8 !important; }
+    .section-label { color: #00F0FF; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-top: 20px; }
     
-    /* 🔴 RED METRICS: CRITICAL RISK & IMPACT */
-    div[data-testid="stMetric"]:has(label:contains("CRITICAL")) [data-testid="stMetricValue"] div,
-    div[data-testid="stMetric"]:has(label:contains("🔴")) [data-testid="stMetricValue"] div { 
-        color: #FF4D4D !important; 
-    }
-
-    /* 🔵 CYAN METRICS: STABLE & EFFICIENCY */
-    div[data-testid="stMetric"]:has(label:contains("STABLE")) [data-testid="stMetricValue"] div,
-    div[data-testid="stMetric"]:has(label:contains("EFFICIENCY")) [data-testid="stMetricValue"] div { 
-        color: #00F0FF !important; 
-    }
-    
-    /* 🟡 YELLOW METRICS: CONFIDENCE */
-    div[data-testid="stMetric"]:has(label:contains("CONFIDENCE")) [data-testid="stMetricValue"] div { 
-        color: #FFD700 !important; 
-    }
-
-    /* XAI IMPACT COLORS (GREEN logic for High support / Low contract) */
-    div[data-testid="stMetric"]:has(label:contains("🟢")) [data-testid="stMetricValue"] div { 
-        color: #00FFAB !important; 
-    }
-
-    [data-testid="stMetricLabel"] { font-size: 14px !important; color: #94A3B8 !important; text-transform: uppercase; }
     .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; height: 45px; }
-    .section-label { color: #00F0FF; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; margin-top: 20px; }
     </style>
     """, unsafe_allow_html=True)
 
