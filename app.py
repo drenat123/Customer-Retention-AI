@@ -29,7 +29,7 @@ st.markdown("""
         font-size: 70px;
         filter: drop-shadow(0 0 30px rgba(0, 240, 255, 0.4));
         display: inline-block;
-        animation: float 4s infinite ease-out;
+        animation: float 4s infinite ease-in-out;
     }
     .main-title {
         font-size: 57px !important;
@@ -206,7 +206,7 @@ opts = industry_options[selected_niche]
 base_df = get_industry_data(selected_niche, cfg['prefix'])
 
 # Initialize session state for the target ID
-if 'selected_id' not in st.session_state:
+if 'selected_id' not in st.session_state or st.session_state.selected_id not in base_df['customerID'].values:
     st.session_state.selected_id = base_df.iloc[0]['customerID']
 
 # 3. PRIORITY QUEUE
@@ -215,12 +215,12 @@ display_df = base_df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'Ris
 display_df.insert(0, "Select", display_df['customerID'] == st.session_state.selected_id)
 display_df.columns = ['Select', 'Customer ID', 'Tenure (M)', 'MRR ($)', cfg['label'], 'AI Risk Score']
 
-# FIXED: Stable key and error handling
+# FIXED: Removed industry name from key to stop Streamlit redraw errors
 edited_df = st.data_editor(
     display_df, 
     hide_index=True, 
     use_container_width=True, 
-    key=f"editor_stable_{selected_niche}",
+    key="main_data_editor_stable",
     help="The model prioritizes these accounts based on real-time churn probability gradients."
 )
 
@@ -232,13 +232,8 @@ if not checked_rows.empty:
         st.rerun()
 
 # --- INDIVIDUAL RISK ANALYSIS ---
-# Safe lookup to prevent crash if data refreshes
-try:
-    target_id = st.session_state.selected_id
-    selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
-except:
-    st.session_state.selected_id = base_df.iloc[0]['customerID']
-    st.rerun()
+target_id = st.session_state.selected_id
+selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
 st.markdown("---")
 render_metric(
