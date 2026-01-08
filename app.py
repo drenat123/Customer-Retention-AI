@@ -6,34 +6,36 @@ import numpy as np
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 CSS FOR LAYOUT & FONTS
+# 🎨 THE FINAL "FORCE-PAINT" CSS
 # ==========================================
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap');
+    
     header, [data-testid="stHeader"] { display: none !important; }
+    
     html, body, [data-testid="stAppViewContainer"] { 
         background-color: #0B0E14 !important;
         font-family: 'Plus Jakarta Sans', sans-serif !important;
     }
-    .section-label { color: #00F0FF; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-top: 20px; margin-bottom: 10px; }
-    
-    /* Custom Metric Styling to match your screenshot */
-    .metric-container { text-align: center; padding: 10px; }
-    .metric-label { font-size: 14px; color: #94A3B8; text-transform: uppercase; margin-bottom: 4px; }
-    .metric-value { font-size: 48px; font-weight: 700; }
-    
+
+    /* Target the text within the metric value containers specifically */
+    [data-testid="stMetricValue"] div {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 48px !important;
+        font-weight: 700 !important;
+    }
+
+    /* WE ASSIGN UNIQUE IDs TO COLUMNS TO FORCE COLORS WITHOUT BLURRING TOOLTIPS */
+    div#metric-green [data-testid="stMetricValue"] div { color: #00FFAB !important; }
+    div#metric-red [data-testid="stMetricValue"] div { color: #FF4D4D !important; }
+    div#metric-cyan [data-testid="stMetricValue"] div { color: #00F0FF !important; }
+    div#metric-yellow [data-testid="stMetricValue"] div { color: #FFD700 !important; }
+
+    [data-testid="stMetricLabel"] { font-size: 14px !important; color: #94A3B8 !important; text-transform: uppercase; }
+    .section-label { color: #00F0FF; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-top: 20px; }
     .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; }
     </style>
-    """, unsafe_allow_html=True)
-
-# 🛠️ CUSTOM METRIC FUNCTION (The Fix)
-def custom_metric(label, value, color, help_text=""):
-    st.markdown(f"""
-        <div class="metric-container">
-            <div class="metric-label" title="{help_text}">{label}</div>
-            <div class="metric-value" style="color: {color} !important;">{value}</div>
-        </div>
     """, unsafe_allow_html=True)
 
 # 2. DATA & INDUSTRY CONFIG
@@ -107,11 +109,15 @@ savings = ((base_risk/100) * (monthly * 24)) - ((sim_risk/100) * ((monthly * (1 
 st.markdown("---")
 m1, m2 = st.columns(2)
 with m1:
-    color = "#FF4D4D" if sim_risk > 30 else "#00F0FF"
-    label = "🔴 CRITICAL RISK" if sim_risk > 30 else "🔵 STABLE RISK"
-    custom_metric(label, f"{sim_risk:.1f}%", color, "Predicted churn probability.")
+    # Use HTML wrapper to set the ID for color
+    risk_id = "metric-red" if sim_risk > 30 else "metric-cyan"
+    st.markdown(f'<div id="{risk_id}">', unsafe_allow_html=True)
+    st.metric("🔴 CRITICAL RISK" if sim_risk > 30 else "🔵 STABLE RISK", f"{sim_risk:.1f}%", help="Predicted churn probability.")
+    st.markdown('</div>', unsafe_allow_html=True)
 with m2:
-    custom_metric("🟢 REVENUE SAFEGUARDED", f"+${savings:,.2f}", "#00FFAB", "Total amount protected.")
+    st.markdown('<div id="metric-green">', unsafe_allow_html=True)
+    st.metric("🟢 REVENUE SAFEGUARDED", f"+${savings:,.2f}", help="Total amount protected.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # 6. SECTION 3: XAI
 st.markdown("---")
@@ -119,12 +125,16 @@ st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow
 x1, x2 = st.columns(2)
 with x1:
     val = "High" if contract == "Standard" else "Low"
-    col = "#FF4D4D" if val == "High" else "#00FFAB"
-    custom_metric(f"🔴 {cfg['label']} IMPACT", val, col, "Correlation to churn.")
+    impact_id = "metric-red" if val == "High" else "metric-green"
+    st.markdown(f'<div id="{impact_id}">', unsafe_allow_html=True)
+    st.metric(f"🔴 {cfg['label']} IMPACT", val, help="Correlation to churn.")
+    st.markdown('</div>', unsafe_allow_html=True)
 with x2:
     val = "High" if not has_support else "Low"
-    col = "#FF4D4D" if val == "High" else "#00FFAB"
-    custom_metric(f"🟢 SUPPORT IMPACT", val, col, "Impact of priority support.")
+    sup_id = "metric-red" if val == "High" else "metric-green"
+    st.markdown(f'<div id="{sup_id}">', unsafe_allow_html=True)
+    st.metric(f"🟢 SUPPORT IMPACT", val, help="Impact of priority support.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # 7. SECTION 4: MACRO IMPACT
 st.markdown("---")
@@ -132,10 +142,16 @@ st.markdown('<p class="section-label">4. Macro Business Impact Projection</p>', 
 bi1, bi2, bi3 = st.columns(3)
 with bi1: 
     annual = (savings * 12 * (cfg['scale']/100))
-    custom_metric("🟢 ANNUAL SAVINGS", f"+${annual:,.0f}", "#00FFAB", "Projected yearly recovery.")
+    st.markdown('<div id="metric-green">', unsafe_allow_html=True)
+    st.metric("🟢 ANNUAL SAVINGS", f"+${annual:,.0f}", help="Projected yearly recovery.")
+    st.markdown('</div>', unsafe_allow_html=True)
 with bi2: 
-    custom_metric("🔵 EFFICIENCY", "91%", "#00F0FF", "Model accuracy rate.")
+    st.markdown('<div id="metric-cyan">', unsafe_allow_html=True)
+    st.metric("🔵 EFFICIENCY", "91%", help="Model accuracy rate.")
+    st.markdown('</div>', unsafe_allow_html=True)
 with bi3: 
-    custom_metric("🟡 CONFIDENCE", "94.2%", "#FFD700", "AI confidence.")
+    st.markdown('<div id="metric-yellow">', unsafe_allow_html=True)
+    st.metric("🟡 CONFIDENCE", "94.2%", help="AI confidence.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani</p>", unsafe_allow_html=True)
