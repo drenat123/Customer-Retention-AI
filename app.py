@@ -6,7 +6,7 @@ import numpy as np
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 DYNAMIC COLOR LOGIC
+# 🎨 BULLETPROOF NESTED CSS LOGIC
 # ==========================================
 st.markdown("""
     <style>
@@ -18,22 +18,28 @@ st.markdown("""
         color: #FFFFFF; 
     }
 
-    /* Target by Label to force specific Neon Colors */
-    div[data-testid="stMetric"]:has(label:contains("SAFEGUARDED")) [data-testid="stMetricValue"],
-    div[data-testid="stMetric"]:has(label:contains("SAVINGS")) [data-testid="stMetricValue"] { color: #00FFAB !important; }
-    
-    div[data-testid="stMetric"]:has(label:contains("CONFIDENCE")) [data-testid="stMetricValue"] { color: #FFD700 !important; }
-    
-    /* REACTIVE CLASSES */
-    div[data-testid="stMetric"]:has(label:contains("CRITICAL")) [data-testid="stMetricValue"] { color: #FF4D4D !important; }
-    div[data-testid="stMetric"]:has(label:contains("STABLE")) [data-testid="stMetricValue"] { color: #00F0FF !important; }
+    /* Target the inner-most div of the metric value found in Inspect */
+    [data-testid="stMetricValue"] div { 
+        font-size: 48px !important; 
+        font-weight: 700 !important; 
+        justify-content: center !important; 
+    }
 
-    /* REACTIVE COLOR LOGIC FOR HIGH/LOW VALUES */
-    div[data-testid="stMetricValue"]:contains("High") { color: #00FFAB !important; }
-    div[data-testid="stMetricValue"]:contains("Medium") { color: #FF9F00 !important; }
-    div[data-testid="stMetricValue"]:contains("Low") { color: #FF4D4D !important; }
+    /* REVENUE & SAVINGS (NEON GREEN) */
+    div[data-testid="stMetric"]:has(label:contains("SAFEGUARDED")) [data-testid="stMetricValue"] div,
+    div[data-testid="stMetric"]:has(label:contains("SAVINGS")) [data-testid="stMetricValue"] div { color: #00FFAB !important; }
+    
+    /* CONFIDENCE (YELLOW) */
+    div[data-testid="stMetric"]:has(label:contains("CONFIDENCE")) [data-testid="stMetricValue"] div { color: #FFD700 !important; }
+    
+    /* RISK STATES (RED & CYAN) */
+    div[data-testid="stMetric"]:has(label:contains("CRITICAL")) [data-testid="stMetricValue"] div { color: #FF4D4D !important; }
+    div[data-testid="stMetric"]:has(label:contains("STABLE")) [data-testid="stMetricValue"] div { color: #00F0FF !important; }
 
-    [data-testid="stMetricValue"] { font-size: 48px !important; font-weight: 700 !important; justify-content: center !important; }
+    /* HIGH/LOW IMPACT COLORS - Targeted by Emoji in Label */
+    div[data-testid="stMetric"]:has(label:contains("🔴")) [data-testid="stMetricValue"] div { color: #FF4D4D !important; }
+    div[data-testid="stMetric"]:has(label:contains("🟢")) [data-testid="stMetricValue"] div { color: #00FFAB !important; }
+
     [data-testid="stMetricLabel"] { justify-content: center !important; font-size: 14px !important; color: #94A3B8 !important; }
     
     .stButton > button { width: 100%; background-color: transparent !important; color: #FFFFFF !important; border: 1px solid #30363D !important; border-radius: 8px !important; height: 45px; }
@@ -102,6 +108,7 @@ with b2: st.button("10% Off", on_click=lambda: st.session_state.update({"active_
 with b3: st.button("25% Off", on_click=lambda: st.session_state.update({"active_discount": 25}))
 with b4: st.button("50% VIP", on_click=lambda: st.session_state.update({"active_discount": 50}))
 
+# Logic
 base_risk = 35 if contract == "Standard" else 10
 if not has_support: base_risk += 15
 base_risk = max(5, min(95, base_risk - (tenure * 0.3)))
@@ -117,18 +124,16 @@ with m1:
 with m2:
     st.metric("🟢 REVENUE SAFEGUARDED", f"+${savings:,.2f}", help="Total dollar amount protected from loss.")
 
-# 6. SECTION 3: XAI (RECIPIENT OF EMOJI + COLOR FIX)
+# 6. SECTION 3: XAI
 st.markdown("---")
 st.markdown('<p class="section-label">3. Explainable AI (XAI)</p>', unsafe_allow_html=True)
 x1, x2 = st.columns(2)
 with x1:
-    impact_color = "🔴" if contract == "Standard" else "🟢"
-    contract_val = "High" if contract == "Standard" else "Low"
-    st.metric(f"{impact_color} {cfg['label']} IMPACT", contract_val, help="Correlation between contract type and churn.")
+    impact_emoji = "🔴" if contract == "Standard" else "🟢"
+    st.metric(f"{impact_emoji} {cfg['label']} IMPACT", "High" if contract == "Standard" else "Low", help="Correlation between contract type and churn.")
 with x2:
-    sup_color = "🔴" if not has_support else "🟢"
-    support_val = "High" if not has_support else "Low"
-    st.metric(f"{sup_color} SUPPORT IMPACT", support_val, help="Impact of priority support on this customer.")
+    sup_emoji = "🔴" if not has_support else "🟢"
+    st.metric(f"{sup_emoji} SUPPORT IMPACT", "High" if not has_support else "Low", help="Impact of priority support on this customer.")
 
 # 7. SECTION 4: MACRO IMPACT
 st.markdown("---")
