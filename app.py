@@ -6,7 +6,7 @@ import numpy as np
 st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 COMPLETE UI & BUTTON RECOVERY CSS
+# 🎨 LOCKED UI - DO NOT ALTER
 # ==========================================
 st.markdown("""
     <style>
@@ -20,7 +20,6 @@ st.markdown("""
         color: white;
     }
 
-    /* SECTION LABELS */
     .section-label { 
         color: #00F0FF; 
         font-size: 14px; 
@@ -31,7 +30,7 @@ st.markdown("""
         margin-bottom: 15px; 
     }
 
-    /* BUTTONS RECOVERY: Making them look clickable and highlighted again */
+    /* BUTTONS: Solid, Highlighted, and Clickable */
     .stButton > button {
         width: 100% !important;
         background-color: #161B22 !important;
@@ -50,36 +49,17 @@ st.markdown("""
         box-shadow: 0 0 10px rgba(0, 240, 255, 0.2) !important;
     }
 
-    /* CUSTOM METRIC BOXES (To bypass the white-text bug) */
-    .metric-card {
-        text-align: left;
-        padding: 10px 0;
-    }
+    /* CUSTOM HTML METRICS: Zero-risk Color Locking */
+    .metric-card { text-align: left; padding: 10px 0; }
     .metric-header {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        color: #94A3B8;
-        font-size: 14px;
-        text-transform: uppercase;
-        font-weight: 600;
-        margin-bottom: 4px;
+        display: flex; align-items: center; gap: 6px;
+        color: #94A3B8; font-size: 14px; text-transform: uppercase;
+        font-weight: 600; margin-bottom: 4px;
     }
-    .tooltip-icon {
-        cursor: help;
-        font-size: 12px;
-        color: #484F58;
-    }
-    .metric-val {
-        font-size: 48px;
-        font-weight: 700;
-        line-height: 1.1;
-    }
+    .tooltip-icon { cursor: help; font-size: 12px; color: #484F58; }
+    .metric-val { font-size: 48px; font-weight: 700; line-height: 1.1; }
 
-    /* Data Editor override */
-    [data-testid="stDataEditor"] {
-        background-color: #0B0E14 !important;
-    }
+    [data-testid="stDataEditor"] { background-color: #0B0E14 !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -149,7 +129,7 @@ with c2:
     monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="The recurring monthly revenue from this customer. High-value customers are high priority for retention.")
     has_support = st.checkbox("Simulate Priority Support?", value=True, help="Enabling priority support simulates the impact of a dedicated agent or faster response times on customer satisfaction.")
 
-# BUTTONS SECTION: Restored 4-column layout for "Highlights"
+# BUTTONS
 st.markdown("<br>", unsafe_allow_html=True)
 b1, b2, b3, b4 = st.columns(4)
 with b1: st.button("No Offer", on_click=lambda: st.session_state.update({"active_discount": 0}), key="btn0")
