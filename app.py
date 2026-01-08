@@ -6,7 +6,7 @@ import numpy as np
 st.set_page_config(page_title="Aegis Retention AI", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 LOCKED UI & AEGIS BRANDING - DO NOT ALTER
+# 🎨 LOCKED UI & AEGIS BRANDING
 # ==========================================
 st.markdown("""
     <style>
@@ -20,13 +20,12 @@ st.markdown("""
         color: white;
     }
 
-    /* --- AEGIS EYE-CATCHER HEADER --- */
+    /* AEGIS HEADER */
     .header-container {
         text-align: center;
         padding: 50px 0 30px 0;
         background: radial-gradient(circle at center, rgba(0, 240, 255, 0.08) 0%, transparent 70%);
     }
-
     .logo-shield {
         font-size: 60px;
         margin-bottom: 15px;
@@ -34,7 +33,6 @@ st.markdown("""
         display: inline-block;
         animation: float 4s infinite ease-in-out;
     }
-
     .main-title {
         font-size: 72px !important;
         font-weight: 800 !important;
@@ -45,7 +43,6 @@ st.markdown("""
         -webkit-text-fill-color: transparent;
         margin-bottom: 5px !important;
     }
-
     .sub-title {
         color: #00F0FF;
         font-size: 14px;
@@ -54,7 +51,6 @@ st.markdown("""
         letter-spacing: 6px;
         opacity: 0.9;
     }
-
     .glow-line {
         height: 1px;
         width: 400px;
@@ -63,12 +59,7 @@ st.markdown("""
         box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
     }
 
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-    }
-    /* -------------------------------- */
-
+    /* SECTION LABELS */
     .section-label { 
         color: #00F0FF; 
         font-size: 14px; 
@@ -79,6 +70,7 @@ st.markdown("""
         margin-bottom: 15px; 
     }
 
+    /* BUTTONS */
     .stButton > button {
         width: 100% !important;
         background-color: #161B22 !important;
@@ -89,7 +81,6 @@ st.markdown("""
         font-weight: 600 !important;
         transition: all 0.3s ease !important;
     }
-
     .stButton > button:hover {
         border-color: #00F0FF !important;
         color: #00F0FF !important;
@@ -97,6 +88,7 @@ st.markdown("""
         box-shadow: 0 0 10px rgba(0, 240, 255, 0.2) !important;
     }
 
+    /* METRICS */
     .metric-card { text-align: left; padding: 10px 0; }
     .metric-header {
         display: flex; align-items: center; gap: 6px;
@@ -106,11 +98,39 @@ st.markdown("""
     .tooltip-icon { cursor: help; font-size: 12px; color: #484F58; }
     .metric-val { font-size: 48px; font-weight: 700; line-height: 1.1; }
 
+    /* --- NEW ADDITIONS --- */
+    .confidence-glow {
+        border-bottom: 2px solid #00F0FF;
+        box-shadow: 0 4px 10px -2px rgba(0, 240, 255, 0.6);
+        display: inline-block;
+    }
+
+    .footer-brand {
+        text-align: center;
+        margin-top: 80px;
+        padding: 40px;
+        border-top: 1px solid #161B22;
+    }
+    .footer-text {
+        font-size: 24px !important;
+        font-weight: 700;
+        letter-spacing: -1px;
+        background: linear-gradient(180deg, #FFFFFF 0%, #94A3B8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    /* --------------------- */
+
     [data-testid="stDataEditor"] { background-color: #0B0E14 !important; }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# --- HEADER INJECTION ---
+# HEADER INJECTION
 st.markdown("""
     <div class="header-container">
         <div class="logo-shield">🛡️</div>
@@ -120,14 +140,15 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-def render_metric(label, value, color, tooltip):
+def render_metric(label, value, color, tooltip, is_confidence=False):
+    val_class = "metric-val confidence-glow" if is_confidence else "metric-val"
     st.markdown(f"""
         <div class="metric-card">
             <div class="metric-header">
                 <span>{label}</span>
                 <span class="tooltip-icon" title="{tooltip}">ⓘ</span>
             </div>
-            <div class="metric-val" style="color: {color};">{value}</div>
+            <div class="{val_class}" style="color: {color};">{value}</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -178,11 +199,11 @@ selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 st.markdown(f'<p class="section-label">2. Simulation Lab: {target_id}</p>', unsafe_allow_html=True)
 c1, c2 = st.columns(2)
 with c1:
-    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']), help="Customer's loyalty duration.")
-    contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"], help="Current service tier.")
+    tenure = st.number_input("Tenure (Months)", 1, 72, value=int(selected_row['tenure']))
+    contract = st.selectbox(cfg['label'], ["Standard", "Premium", "Enterprise"])
 with c2:
-    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="Monthly recurring revenue.")
-    has_support = st.checkbox("Simulate Priority Support?", value=True, help="Simulate impact of a dedicated agent.")
+    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']))
+    has_support = st.checkbox("Simulate Priority Support?", value=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 b1, b2, b3, b4 = st.columns(4)
@@ -206,7 +227,7 @@ with m1:
     lab = "🔴 CRITICAL RISK" if sim_risk > 30 else "🔵 STABLE RISK"
     render_metric(lab, f"{sim_risk:.1f}%", col, "Predicted probability of churn.")
 with m2:
-    render_metric("🟢 REVENUE SAFEGUARDED", f"+${savings:,.2f}", "#00FFAB", "Estimated dollar value of revenue protected.")
+    render_metric("🟢 REVENUE SAFEGUARDED", f"+${savings:,.2f}", "#00FFAB", "Estimated revenue protected.")
 
 # 6. SECTION 3: XAI
 st.markdown("---")
@@ -231,6 +252,13 @@ with bi1:
 with bi2: 
     render_metric("🔵 EFFICIENCY", "91%", "#00F0FF", "Historical accuracy.")
 with bi3: 
-    render_metric("🟡 CONFIDENCE", "94.2%", "#FFD700", "AI confidence level.")
+    render_metric("🟡 CONFIDENCE", "94.2%", "#FFD700", "AI confidence level.", is_confidence=True)
 
-st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani</p>", unsafe_allow_html=True)
+# 8. STYLED FOOTER
+st.markdown("""
+    <div class="footer-brand">
+        <p style="color: #94A3B8; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px;">Lead Architect</p>
+        <h2 class="footer-text">DRENAT NALLBANI</h2>
+        <div style="width: 50px; height: 1px; background: #00F0FF; margin: 10px auto; opacity: 0.5;"></div>
+    </div>
+    """, unsafe_allow_html=True)
