@@ -68,12 +68,6 @@ st.markdown("""
         transform: translateY(-2px);
     }
 
-    div.stButton > button:active, div.stButton > button:focus {
-        background: rgba(0, 240, 255, 0.15) !important;
-        border-color: #00F0FF !important;
-        box-shadow: 0 0 25px rgba(0, 240, 255, 0.7) !important;
-    }
-
     .section-label { 
         color: #00F0FF; 
         font-size: 12px; 
@@ -85,24 +79,25 @@ st.markdown("""
         border-bottom: 1px solid rgba(0, 240, 255, 0.1);
     }
 
+    /* UPDATED METRIC CARD FOR RESPONSIVENESS */
     .metric-card { 
         background: rgba(15, 19, 26, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 16px;
         padding: 24px;
         backdrop-filter: blur(10px);
-        min-height: 180px; 
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        justify-content: center;
+        min-height: 160px;
     }
     
-    .metric-val { font-size: 42px; font-weight: 800; line-height: 1; margin: 0; }
+    .metric-val { font-size: clamp(32px, 5vw, 42px); font-weight: 800; line-height: 1; margin: 0; }
 
     .live-insight {
-        flex: 1; font-size: 11px; line-height: 1.4; font-weight: 500;
-        text-align: right; padding: 10px; border-radius: 8px;
-        background: rgba(0, 240, 255, 0.02); border-left: 2px solid rgba(0, 240, 255, 0.3);
+        flex: 1; font-size: 12px; line-height: 1.5; font-weight: 500;
+        text-align: left; padding: 15px; border-radius: 8px;
+        background: rgba(0, 240, 255, 0.03); border-left: 3px solid rgba(0, 240, 255, 0.4);
     }
 
     .footer-brand {
@@ -131,13 +126,13 @@ st.markdown("""
 def render_metric(label, value, color, insight_text):
     st.markdown(f"""
         <div class="metric-card">
-            <div style="display: flex; justify-content: space-between; color: #94A3B8; font-size: 13px; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; color: #94A3B8; font-size: 13px; font-weight: 700; text-transform: uppercase; margin-bottom: 15px;">
                 <span>{label}</span>
                 <span style="opacity: 0.3; font-size: 9px;">AI INSIGHT ENGINE</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px;">
                 <div class="metric-val" style="color: {color};">{value}</div>
-                <div class="live-insight" style="color: rgba(0, 240, 255, 0.8);">
+                <div class="live-insight" style="color: rgba(255, 255, 255, 0.9);">
                     {insight_text}
                 </div>
             </div>
@@ -147,8 +142,7 @@ def render_metric(label, value, color, insight_text):
 # 2. DATA ENGINE
 selected_niche = st.selectbox(
     "📂 Select Enterprise Database", 
-    ["Telecommunications", "Healthcare", "SaaS", "Banking"],
-    help="Toggle between industry silos to observe model adaptation to niche-specific churn drivers."
+    ["Telecommunications", "Healthcare", "SaaS", "Banking"]
 )
 
 if 'active_discount' not in st.session_state:
@@ -198,7 +192,7 @@ if not checked_rows.empty:
         st.session_state.selected_id = new_id
         st.rerun()
 
-# --- SURGICAL ADDITION: AI REASONING SECTION ---
+# --- SURGICAL REASONING UPDATE ---
 target_id = st.session_state.selected_id
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
@@ -206,7 +200,7 @@ render_metric(
     "CHURN REASONING", 
     "PREDICTIVE", 
     "#FFFFFF", 
-    f"Model indicates {target_id} is likely to churn due to <b>{opts['reason']}</b> Analysis suggests immediate intervention via loyalty lock-ins."
+    f"Model indicates <b>{target_id}</b> is likely to churn due to <b>{opts['reason']}</b> Analysis suggests immediate intervention via loyalty lock-ins."
 )
 
 # 4. SIMULATION LAB
@@ -214,33 +208,14 @@ st.markdown(f'<p class="section-label">02 // Dynamic Simulation Lab: {target_id}
 c1, c2, c3 = st.columns(3)
 
 with c1:
-    tenure = st.number_input(
-        "Adjust Tenure (Months)", 1, 72, value=int(selected_row['tenure']),
-        help="The total duration of the customer relationship. Higher tenure generally decreases churn risk via the loyalty effect."
-    )
-    contract = st.selectbox(
-        f"Modify {cfg['label']}", opts["contracts"],
-        help="Contractual commitment levels. Long-term contracts act as primary retention anchors in the deterministic logic."
-    )
+    tenure = st.number_input("Adjust Tenure (Months)", 1, 72, value=int(selected_row['tenure']))
+    contract = st.selectbox(f"Modify {cfg['label']}", opts["contracts"])
 with c2:
-    monthly = st.number_input(
-        "Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']),
-        help="Monthly Recurring Revenue (MRR). This directly impacts the 'Revenue Saved' projection."
-    )
-    service = st.selectbox(
-        opts["service_label"], opts["services"],
-        help="Specific product tier. High-tier services (e.g., Fiber/Platinum) are weighted for specific market volatility."
-    )
+    monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']))
+    service = st.selectbox(opts["service_label"], opts["services"])
 with c3:
-    # SURGICAL FIX: Changed value=True to value=False for user-initiated checking
-    has_support = st.checkbox(
-        opts["support_label"], value=False,
-        help="Active support access reduces risk probability scores by improving customer satisfaction scores."
-    )
-    agent_priority = st.checkbox(
-        "Priority AI Routing", value=False,
-        help="Enabling this routes high-risk accounts to senior retention specialists automatically."
-    )
+    has_support = st.checkbox(opts["support_label"], value=False)
+    agent_priority = st.checkbox("Priority AI Routing", value=False)
 
 st.markdown("<br>", unsafe_allow_html=True)
 b1, b2, b3, b4 = st.columns(4)
@@ -249,20 +224,14 @@ with b2: st.button("Tier 1 (10%)", on_click=lambda: st.session_state.update({"ac
 with b3: st.button("Tier 2 (25%)", on_click=lambda: st.session_state.update({"active_discount": 25}), key="btn25")
 with b4: st.button("VIP (50%)", on_click=lambda: st.session_state.update({"active_discount": 50}), key="btn50")
 
-# --- VALIDATED LOGIC RECALIBRATION ---
-risk_multiplier = 0.4 
-if selected_niche == "Banking": 
-    risk_multiplier = 0.8  # Stronger loyalty effect
-elif selected_niche == "SaaS": 
-    risk_multiplier = 0.1  # Weak loyalty effect
-
+# Logic
+risk_multiplier = 0.4 if selected_niche != "Banking" else 0.8
 base_risk = 75 if "Month" in contract or "Basic" in contract or "Savings" in contract else 25
 if "Fiber" in str(service) or "Platinum" in str(service): base_risk += 12
 if not has_support: base_risk += 18
 base_risk = max(5, min(95, base_risk - (tenure * risk_multiplier)))
 sim_risk = max(5, base_risk - (st.session_state.active_discount * 0.75))
 savings = ((base_risk/100) * (monthly * 24)) - ((sim_risk/100) * ((monthly * (1 - st.session_state.active_discount/100)) * 24))
-
 dyn_confidence = 92.5 + (np.sin(tenure) * 2.4)
 
 # 5. DYNAMIC RESULTS
