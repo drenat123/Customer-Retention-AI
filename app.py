@@ -162,7 +162,6 @@ def get_industry_data(niche, prefix):
     np.random.seed(42) 
     df['RiskScore'] = [f"{np.random.randint(10, 98)}%" for _ in range(len(df))]
     
-    # INDUSTRY-SPECIFIC LOGIC (MATCHES DROPDOWNS)
     industry_prompts = {
         "Telecommunications": {
             "Low Account Balance": "Switch to <b>Two Year</b> contract to lower monthly strain.",
@@ -215,11 +214,12 @@ display_df = base_df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'Ris
 display_df.insert(0, "Select", display_df['customerID'] == st.session_state.selected_id)
 display_df.columns = ['Select', 'Customer ID', 'Tenure (M)', 'MRR ($)', cfg['label'], 'AI Risk Score']
 
+# FIXED: Unique key based on industry to prevent TypeError
 edited_df = st.data_editor(
     display_df, 
     hide_index=True, 
     use_container_width=True, 
-    key=f"ed_{selected_niche}",
+    key=f"data_editor_{selected_niche}",
     help="The model prioritizes these accounts based on real-time churn probability gradients."
 )
 
@@ -264,7 +264,7 @@ with b2: st.button("Tier 1 (10%)", on_click=lambda: st.session_state.update({"ac
 with b3: st.button("Tier 2 (25%)", on_click=lambda: st.session_state.update({"active_discount": 25}), key="btn25")
 with b4: st.button("VIP (50%)", on_click=lambda: st.session_state.update({"active_discount": 50}), key="btn50")
 
-# --- CALIBRATION LOGIC (MATCHES AI SUGGESTIONS) ---
+# --- CALIBRATION ---
 sim_risk = 85.0 if any(word in contract for word in ["Month", "Basic", "Savings"]) else 45.0
 if has_support: sim_risk -= 35.0
 if agent_priority: sim_risk -= 25.0
@@ -286,7 +286,7 @@ with m1:
 with m2:
     render_metric("REVENUE SAVED", f"+${savings:,.2f}", "#00FFAB", "Projected total revenue preserved over a 24-month lifecycle.")
 
-# 6. MACRO IMPACT SECTION (RESTORED)
+# 6. MACRO IMPACT
 st.markdown('<p class="section-label">03 // Intelligence & Macro Projections</p>', unsafe_allow_html=True)
 x1, x2, x3 = st.columns(3)
 with x1:
