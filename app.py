@@ -3,10 +3,10 @@ import pandas as pd
 import numpy as np
 
 # 1. PAGE CONFIG
-st.set_page_config(page_title="AI Retention Hub", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="Aegis Retention AI", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 🎨 LOCKED UI - PERMANENT COLOR FIX
+# 🎨 LOCKED UI - DO NOT ALTER EXISTING LOGIC
 # ==========================================
 st.markdown("""
     <style>
@@ -19,6 +19,54 @@ st.markdown("""
         font-family: 'Plus Jakarta Sans', sans-serif !important;
         color: white;
     }
+
+    /* --- THE EYE-CATCHER HEADER SECTION --- */
+    .header-container {
+        text-align: center;
+        padding: 40px 0 20px 0;
+        background: radial-gradient(circle at center, rgba(0, 240, 255, 0.05) 0%, transparent 70%);
+    }
+
+    .logo-shield {
+        font-size: 50px;
+        margin-bottom: 10px;
+        filter: drop-shadow(0 0 15px #00F0FF);
+        animation: pulse 3s infinite ease-in-out;
+    }
+
+    .main-title {
+        font-size: 64px !important;
+        font-weight: 800 !important;
+        letter-spacing: -2px !important;
+        background: linear-gradient(180deg, #FFFFFF 0%, #94A3B8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0px !important;
+    }
+
+    .sub-title {
+        color: #00F0FF;
+        font-size: 16px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 4px;
+        margin-top: -10px;
+        opacity: 0.8;
+    }
+
+    .gradient-line {
+        height: 2px;
+        width: 300px;
+        margin: 20px auto;
+        background: linear-gradient(90deg, transparent, #00F0FF, transparent);
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.05); opacity: 1; }
+        100% { transform: scale(1); opacity: 0.8; }
+    }
+    /* -------------------------------------- */
 
     .section-label { 
         color: #00F0FF; 
@@ -61,9 +109,15 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- CENTERED TITLE (SAFE ADDITION) ---
-st.markdown("<h1 style='text-align: center; color: white; font-weight: 700; margin-top: -30px; margin-bottom: 20px;'>AI Retention Hub</h1>", unsafe_allow_html=True)
-# --------------------------------------
+# --- INJECTING THE EYE-CATCHER HEADER ---
+st.markdown("""
+    <div class="header-container">
+        <div class="logo-shield">🛡️</div>
+        <h1 class="main-title">AEGIS RETENTION</h1>
+        <p class="sub-title">Predictive Intelligence & Revenue Protection</p>
+        <div class="gradient-line"></div>
+    </div>
+    """, unsafe_allow_html=True)
 
 def render_metric(label, value, color, tooltip):
     st.markdown(f"""
@@ -179,4 +233,3 @@ with bi3:
     render_metric("🟡 CONFIDENCE", "94.2%", "#FFD700", "AI confidence level in this specific prediction.")
 
 st.markdown("<p style='text-align: center; color: #484F58; font-size: 12px; margin-top: 50px;'>Architecture by Drenat Nallbani</p>", unsafe_allow_html=True)
-    
