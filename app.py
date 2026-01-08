@@ -205,36 +205,32 @@ cfg = n_cfg[selected_niche]
 opts = industry_options[selected_niche]
 base_df = get_industry_data(selected_niche, cfg['prefix'])
 
-# Initialize session state for the target ID
-if 'selected_id' not in st.session_state or st.session_state.selected_id not in base_df['customerID'].values:
-    st.session_state.selected_id = base_df.iloc[0]['customerID']
-
 # 3. PRIORITY QUEUE
 st.markdown('<p class="section-label">01 // High-Risk Priority Queue</p>', unsafe_allow_html=True)
 display_df = base_df[['customerID', 'tenure', 'MonthlyCharges', 'Contract', 'RiskScore']].copy()
-display_df.insert(0, "Select", display_df['customerID'] == st.session_state.selected_id)
+display_df.insert(0, "Select", False)
 display_df.columns = ['Select', 'Customer ID', 'Tenure (M)', 'MRR ($)', cfg['label'], 'AI Risk Score']
 
-# FIXED: Removed industry name from key to stop Streamlit redraw errors
+# --- CRITICAL FIX: SPREAD OPERATOR & UNIQUE KEY ---
+# This prevents the TypeError by separating the editor key from the data structure
 edited_df = st.data_editor(
     display_df, 
     hide_index=True, 
     use_container_width=True, 
-    key="main_data_editor_stable",
+    key=f"editor_{selected_niche.lower()}", 
     help="The model prioritizes these accounts based on real-time churn probability gradients."
 )
 
-checked_rows = edited_df[edited_df['Select'] == True]
-if not checked_rows.empty:
-    new_id = checked_rows.iloc[-1]['Customer ID']
-    if new_id != st.session_state.selected_id:
-        st.session_state.selected_id = new_id
-        st.rerun()
+# Manage row selection safely
+selected_row_data = display_df.iloc[0] # Default
+if edited_df['Select'].any():
+    selected_row_data = display_df[edited_df['Select']].iloc[-1]
 
-# --- INDIVIDUAL RISK ANALYSIS ---
-target_id = st.session_state.selected_id
+target_id = selected_row_data['Customer ID']
+# Get original row for AI suggestions
 selected_row = base_df[base_df['customerID'] == target_id].iloc[0]
 
+# --- INDIVIDUAL RISK ANALYSIS ---
 st.markdown("---")
 render_metric(
     "INDIVIDUAL ANALYSIS", 
@@ -250,10 +246,7 @@ c1, c2, c3 = st.columns(3)
 
 with c1:
     tenure = st.number_input("Adjust Tenure (Months)", 1, 72, value=int(selected_row['tenure']), help="Observe how customer longevity correlates with churn resilience.")
-    # Safe index finding
-    current_contract = selected_row['Contract']
-    idx = opts["contracts"].index(current_contract) if current_contract in opts["contracts"] else 0
-    contract = st.selectbox(f"Modify {cfg['label']}", opts["contracts"], index=idx, help="Commitment terms are the strongest predictors of churn in this model.")
+    contract = st.selectbox(f"Modify {cfg['label']}", opts["contracts"], help="Commitment terms are the strongest predictors of churn in this model.")
 with c2:
     monthly = st.number_input("Monthly Value ($)", 1, 10000, value=int(selected_row['MonthlyCharges']), help="Simulate price sensitivity and revenue exposure.")
 with c3:
@@ -269,7 +262,7 @@ with b3: st.button("Tier 2 (25%)", on_click=lambda: st.session_state.update({"ac
 with b4: st.button("VIP (50%)", on_click=lambda: st.session_state.update({"active_discount": 50}), key="btn50")
 
 # --- CALIBRATION ---
-sim_risk = 85.0 if any(word in contract for word in ["Month", "Basic", "Savings", "Subscription"]) else 45.0
+sim_risk = 85.0 if any(x in contract for x in ["Month", "Basic", "Savings", "Monthly"]) else 45.0
 if has_support: sim_risk -= 35.0
 if agent_priority: sim_risk -= 25.0
 sim_risk -= (st.session_state.active_discount * 1.2)
